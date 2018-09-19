@@ -1,4 +1,5 @@
 import requests
+import urwid
 from sys import argv
 
 
@@ -8,11 +9,24 @@ symbols = argv
 symbols = ','.join(symbols)
 payload = {'symbols': symbols, 'types': 'price'}
 
-r = requests.get(
-   iex_batch_url,
-   params=payload
-   )
-r = r.json()
+msg = urwid.Text('Press any key to refresh:')
 
-for ticker, details in r.items():
-    print(f'{ticker}: {details["price"]}')
+
+def refresh(c):
+
+    r = requests.get(
+       iex_batch_url,
+       params=payload
+       )
+    r = r.json()
+
+    txt = ''
+    for ticker, details in r.items():
+        txt = txt + f'{ticker}: {details["price"]}\n'
+    msg.set_text(txt)
+
+
+# refresh(0)
+fill = urwid.Filler(msg, 'top')
+loop = urwid.MainLoop(fill, unhandled_input=refresh)
+loop.run()

@@ -1,6 +1,10 @@
+import asyncio
 import requests
-import urwid
 from sys import argv
+from datetime import datetime
+import threading
+
+import urwid
 
 
 iex_batch_url = 'https://api.iextrading.com/1.0/stock/market/batch'
@@ -9,10 +13,14 @@ symbols = argv
 symbols = ','.join(symbols)
 payload = {'symbols': symbols, 'types': 'price'}
 
-msg = urwid.Text('Press any key to refresh:')
+msg = urwid.Text('Fetching data...')
 
 
-def refresh(c):
+def exit_on_any_key(_):
+    raise urwid.ExitMainLoop()
+
+
+def refresh(loop, _):
 
     r = requests.get(
        iex_batch_url,
@@ -23,10 +31,15 @@ def refresh(c):
     txt = ''
     for ticker, details in r.items():
         txt = txt + f'{ticker}: {details["price"]}\n'
+
+    txt += f'Time is: {datetime.now().strftime("%X")}\n'
+    txt += 'Press any key to exit.'
     msg.set_text(txt)
+    loop.set_alarm_in(1, refresh)
 
 
 # refresh(0)
 fill = urwid.Filler(msg, 'top')
-loop = urwid.MainLoop(fill, unhandled_input=refresh)
+loop = urwid.MainLoop(fill, unhandled_input=exit_on_any_key)
+loop.set_alarm_in(1, refresh)
 loop.run()

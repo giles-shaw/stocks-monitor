@@ -16,24 +16,24 @@ def exit_on_any_key(_):
     raise urwid.ExitMainLoop()
 
 
-# def update_stock_info(info) -> Dict[str, Union[str, float]]:
-#
-#     while True:
-#         payload = requests.get(
-#             iex_batch_url, params={
-#                 "symbols": ",".join(symbols), "types": "price"}
-#         ).json()
-#         for symbol in info.keys():
-#             info[symbol] = payload[symbol]
-#         sleep(10)
-
-
 def update_stock_info(info) -> Dict[str, Union[str, float]]:
 
     while True:
+        payload = requests.get(
+            iex_batch_url,
+            params={"symbols": ",".join(list(info.keys())), "types": "price"},
+        ).json()
         for symbol in info.keys():
-            info[symbol] = {"price": random.randint(1, 101)}
+            info[symbol] = payload[symbol]
         sleep(1)
+
+
+# def update_stock_info(info) -> Dict[str, Union[str, float]]:
+#
+#     while True:
+#         for symbol in info.keys():
+#             info[symbol] = {"price": random.randint(1, 101)}
+#         sleep(1)
 
 
 def refresh(loop: urwid.MainLoop, args):

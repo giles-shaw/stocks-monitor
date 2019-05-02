@@ -1,10 +1,7 @@
-import asyncio
-import random
-from datetime import datetime
 from sys import argv
 from threading import Thread
 from time import sleep
-from typing import Any, Dict, List, Union
+from typing import List
 
 import requests
 import urwid
@@ -27,36 +24,54 @@ class Prices:
             IEX_BATCH_URL, params={"symbols": ",".join(
                 self.symbols), "types": "price"}
         )
-        return r.json()
+        return list(v["price"] for v in r.json().values())
 
     def get_fake_prices(self):
-        for details in self.prices.values():
-            details["price"] += random.normal(0, 1)
-        return self.prices
 
-    def update_loop(self, delay=10):
+        return [p + round(random.normal(0, 1), 2) for p in self.prices]
+
+    def update_loop(self, delay=5):
         while True:
             self.prices = self.get_fake_prices()
             sleep(delay)
 
 
+def get_prices_column(prices):
+
+    return ["Price"] + ["\n{0:.2f}".format(p) for p in prices]
+
+
+def get_symbols_column(symbols):
+
+    return ["Stock"] + ["\n" + sym for sym in symbols]
+
+
 def refresh(loop: urwid.MainLoop, args):
 
-    prices, fill, msg = args
-    txt = ""
-    for ticker, details in prices.prices.items():
-        txt = txt + f'{ticker}: {details["price"]}\n'
-    msg.set_text(txt)
+    prices, stock_column, prices_column = args
+
+    # txt = ""
+    # for ticker, details in prices.prices.items():
+    #     txt = txt + f'{ticker}: {details["price"]}\n'
+
+    # msg.set_text(txt)
+    stock_column.set_text(get_symbols_column(prices.symbols))
+    prices_column.set_text(get_prices_column(prices.prices_string))
     loop.draw_screen()
-    loop.set_alarm_in(1, refresh, (prices, fill, msg))
+    loop.set_alarm_in(1, refresh, (prices, stock_column, prices_column))
 
 
 def gui(prices: Prices):
 
-    msg = urwid.Text("")
-    fill = urwid.Filler(msg, "top")
+    stock_column = urwid.Text(get_symbols_column(prices.symbols))
+    prices_column = urwid.Text(get_prices_column(prices.prices))
+
+    columns = urwid.Columns(
+        [("pack", stock_column), ("pack", prices_column)], dividechars=1
+    )
+    fill = urwid.Filler(columns, "top")
     loop = urwid.MainLoop(fill, unhandled_input=exit_on_any_key)
-    loop.set_alarm_in(0, refresh, (prices, fill, msg))
+    loop.set_alarm_in(0, refresh, (prices, stock_column, prices_column))
     loop.run()
 
 

@@ -109,7 +109,7 @@ def cli():
 
     if Path("sm.conf"):
         with open(Path("sm.conf"), "r") as f:
-            symbols = toml.load(f)["symbols"]
+            symbols = toml.load(f).get("symbols", [])
     else:
         symbols = argv[1:]
 

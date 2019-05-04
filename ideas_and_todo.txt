@@ -1,9 +1,7 @@
 TODO:
+-Make threadsafe using locking or maybe queues.
 -Pretty formatting.
--Display more information.
 -Check for config file and load stocks/ program options from there.
 -Allow for new stocks to be added whilst program is running. And for config to be updated?
 -Colors for stocks
 -Allow for stocks to be sorted whilst program is running
-
-Should implement a generator that returns the most up to date stock information when called (generator because we might want to remember the last price etc to display a delta).

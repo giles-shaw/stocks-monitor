@@ -1,87 +1,103 @@
+from numbers import Number
 from sys import argv
 from threading import Thread
 from time import sleep
 from typing import List
 
+import numpy as np
+import pandas as pd
 import requests
 import urwid
 from numpy import random
 
 IEX_BATCH_URL = "https://api.iextrading.com/1.0/stock/market/batch"
 
+FIELDS = ["symbol", "iexRealtimePrice",
+          "open", "close", "marketCap", "peRatio"]
+
 
 def exit_on_any_key(_):
     raise urwid.ExitMainLoop()
 
 
-class Prices:
+def format_entry(e):
+
+    if isinstance(e, str):
+        return "\n" + e
+    elif isinstance(e, int) or e is None:
+        return "\n" + str(e)
+    elif isinstance(e, float):
+        return "\n" + f"{e:.2f}"
+    else:
+        raise NotImplementedError
+
+
+class Data:
     def __init__(self, symbols):
         self.symbols = symbols
-        self.prices = self.get_prices()
+        self.data = self.get_data()
+        self.data_str = self.get_data_str()
 
-    def get_prices(self):
+    def get_data(self):
         r = requests.get(
             IEX_BATCH_URL, params={"symbols": ",".join(
-                self.symbols), "types": "price"}
+                self.symbols), "types": "quote"}
         )
-        return list(v["price"] for v in r.json().values())
+        flattened = {k: v["quote"] for k, v in r.json().items()}
+        return pd.DataFrame.from_dict(flattened, orient="index")[FIELDS]
 
-    def get_fake_prices(self):
+    def get_data_str(self):
+        df_str = self.data.applymap(format_entry)
 
-        return [p + round(random.normal(0, 1), 2) for p in self.prices]
+        return [[c] + df_str[c].tolist() for c in list(df_str)]
+
+    def get_fake_data(self):
+
+        return self.data.applymap(
+            lambda e: e + random.normal(0, 0.1) if isinstance(e, Number) else e
+        )
 
     def update_loop(self, delay=5):
         while True:
-            self.prices = self.get_fake_prices()
+            self.data = self.get_fake_data()
+            self.data_str = self.get_data_str()
             sleep(delay)
-
-
-def get_prices_column(prices):
-
-    return ["Price"] + ["\n{0:.2f}".format(p) for p in prices]
-
-
-def get_symbols_column(symbols):
-
-    return ["Stock"] + ["\n" + sym for sym in symbols]
 
 
 def refresh(loop: urwid.MainLoop, args):
 
-    prices, stock_column, prices_column = args
+    data, columns = args
 
-    # txt = ""
-    # for ticker, details in prices.prices.items():
-    #     txt = txt + f'{ticker}: {details["price"]}\n'
+    # Not always guaranteed that this is atomic, so code need not be
+    # threadsafe.
+    new_values = data.data_str
 
-    # msg.set_text(txt)
-    stock_column.set_text(get_symbols_column(prices.symbols))
-    prices_column.set_text(get_prices_column(prices.prices_string))
-    loop.draw_screen()
-    loop.set_alarm_in(1, refresh, (prices, stock_column, prices_column))
+    str_data = [urwid.Text(c) for c in new_values]
+    columns.contents = [(c, columns.options("pack")) for c in str_data]
+
+    loop.set_alarm_in(1, refresh, (data, columns))
 
 
-def gui(prices: Prices):
+def gui(data: Data):
 
-    stock_column = urwid.Text(get_symbols_column(prices.symbols))
-    prices_column = urwid.Text(get_prices_column(prices.prices))
+    str_data = dict((field, urwid.Text("")) for field in FIELDS)
 
-    columns = urwid.Columns(
-        [("pack", stock_column), ("pack", prices_column)], dividechars=1
-    )
+    columns = urwid.Columns([("pack", v)
+                             for c, v in str_data.items()], dividechars=1)
     fill = urwid.Filler(columns, "top")
+
     loop = urwid.MainLoop(fill, unhandled_input=exit_on_any_key)
-    loop.set_alarm_in(0, refresh, (prices, stock_column, prices_column))
+    loop.set_alarm_in(0, refresh, (data, columns))
     loop.run()
 
 
 def stocks_monitor(symbols: List[str]):
 
-    prices = Prices(symbols)
-    updater = Thread(target=prices.update_loop, daemon=True)
+    data = Data(symbols)
+    updater = Thread(target=data.update_loop, daemon=True)
     updater.start()
 
-    gui(prices)
+    gui(data)
 
 
 def cli():

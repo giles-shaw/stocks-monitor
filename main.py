@@ -1,4 +1,5 @@
 from numbers import Number
+from pathlib import Path
 from sys import argv
 from threading import Thread
 from time import sleep
@@ -7,6 +8,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 import requests
+import toml
 import urwid
 from numpy import random
 
@@ -49,7 +51,7 @@ class Data:
     def get_data_str(self):
         df_str = self.data.applymap(format_entry)
 
-        return [[c] + df_str[c].tolist() for c in list(df_str)]
+        return [[("bold", c)] + df_str[c].tolist() for c in list(df_str)]
 
     def get_fake_data(self):
 
@@ -80,13 +82,16 @@ def refresh(loop: urwid.MainLoop, args):
 
 def gui(data: Data):
 
+    palette = [("bold", "light red,bold", "default")]
+
     str_data = dict((field, urwid.Text("")) for field in FIELDS)
 
     columns = urwid.Columns([("pack", v)
                              for c, v in str_data.items()], dividechars=1)
     fill = urwid.Filler(columns, "top")
 
-    loop = urwid.MainLoop(fill, unhandled_input=exit_on_any_key)
+    loop = urwid.MainLoop(fill, palette=palette,
+                          unhandled_input=exit_on_any_key)
     loop.set_alarm_in(0, refresh, (data, columns))
     loop.run()
 
@@ -102,7 +107,12 @@ def stocks_monitor(symbols: List[str]):
 
 def cli():
 
-    symbols = argv[1:]
+    if Path("sm.conf"):
+        with open(Path("sm.conf"), "r") as f:
+            symbols = toml.load(f)["symbols"]
+    else:
+        symbols = argv[1:]
+
     stocks_monitor(symbols)
 
 

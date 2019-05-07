@@ -17,8 +17,9 @@ FIELDS = ["symbol", "iexRealtimePrice",
           "open", "close", "marketCap", "peRatio"]
 
 
-def exit_on_any_key(_):
-    raise urwid.ExitMainLoop()
+def exit_on_q(key):
+    if key in ("q", "Q"):
+        raise urwid.ExitMainLoop()
 
 
 def format_entry(e):
@@ -89,8 +90,7 @@ def gui(data: Data):
                              for c, v in str_data.items()], dividechars=1)
     fill = urwid.Filler(columns, "top")
 
-    loop = urwid.MainLoop(fill, palette=palette,
-                          unhandled_input=exit_on_any_key)
+    loop = urwid.MainLoop(fill, palette=palette, unhandled_input=exit_on_q)
     loop.set_alarm_in(0, refresh, (data, columns))
     loop.run()
 

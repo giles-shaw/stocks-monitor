@@ -1,7 +1,0 @@
-TODO:
--Make threadsafe using locking or maybe queues.
--Pretty formatting.
--Work out how to properly deal with file paths for config stuff.
--Allow for new stocks to be added whilst program is running. And for config to be updated?
--Colors for stocks
--Allow for stocks to be sorted whilst program is running

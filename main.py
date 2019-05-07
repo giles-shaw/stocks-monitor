@@ -5,7 +5,6 @@ from threading import Thread
 from time import sleep
 from typing import List
 
-import numpy as np
 import pandas as pd
 import requests
 import toml
@@ -61,7 +60,7 @@ class Data:
 
     def update_loop(self, delay=5):
         while True:
-            self.data = self.get_fake_data()
+            self.data = self.get_data()
             self.data_str = self.get_data_str()
             sleep(delay)
 
@@ -105,15 +104,19 @@ def stocks_monitor(symbols: List[str]):
     gui(data)
 
 
+def get_symbols(argv):
+
+    path = Path.home() / Path(".sm.conf")
+    if path.exists():
+        with open(path, "r") as f:
+            return toml.load(f).get("symbols", [])
+    else:
+        return argv[1:]
+
+
 def cli():
 
-    if Path("sm.conf"):
-        with open(Path("sm.conf"), "r") as f:
-            symbols = toml.load(f).get("symbols", [])
-    else:
-        symbols = argv[1:]
-
-    stocks_monitor(symbols)
+    stocks_monitor(get_symbols(argv))
 
 
 if __name__ == "__main__":

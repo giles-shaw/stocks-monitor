@@ -17,9 +17,11 @@ FIELDS = ["symbol", "iexRealtimePrice",
           "open", "close", "marketCap", "peRatio"]
 
 
-def exit_on_q(key):
+def _handle_input(data, key):
     if key in ("q", "Q"):
         raise urwid.ExitMainLoop()
+    if key in [str(i) for i in range(len(FIELDS))]:
+        data.sort_by_col = FIELDS[int(key)]
 
 
 def format_entry(e):
@@ -39,6 +41,7 @@ class Data:
         self.symbols = symbols
         self.data = pd.DataFrame([])
         self.data_str = [[("bold", c)] for c in FIELDS]
+        self.sort_by_col = None
 
     def get_data(self):
         r = requests.get(
@@ -47,6 +50,17 @@ class Data:
         )
         flattened = {k: v["quote"] for k, v in r.json().items()}
         return pd.DataFrame.from_dict(flattened, orient="index")[FIELDS]
+
+    def get_sorted_data(self):
+        if self.sort_by_col:
+            return self.data.sort_values(
+                by=self.sort_by_col,
+                ascending=(
+                    True if self.data[self.sort_by_col].dtype == "object" else False
+                ),
+            )
+        else:
+            return self.data
 
     def get_data_str(self):
         df_str = self.data.applymap(format_entry)
@@ -62,6 +76,7 @@ class Data:
     def update_loop(self, delay=5):
         while True:
             self.data = self.get_data()
+            self.data = self.get_sorted_data()
             self.data_str = self.get_data_str()
             sleep(delay)
 
@@ -90,7 +105,10 @@ def gui(data: Data):
                              for c, v in str_data.items()], dividechars=1)
     fill = urwid.Filler(columns, "top")
 
-    loop = urwid.MainLoop(fill, palette=palette, unhandled_input=exit_on_q)
+    def handle_input(key):
+        return _handle_input(data, key)
+
+    loop = urwid.MainLoop(fill, palette=palette, unhandled_input=handle_input)
     loop.set_alarm_in(0, refresh, (data, columns))
     loop.run()
 

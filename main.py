@@ -37,8 +37,8 @@ def format_entry(e):
 class Data:
     def __init__(self, symbols):
         self.symbols = symbols
-        self.data = self.get_data()
-        self.data_str = self.get_data_str()
+        self.data = pd.DataFrame([])
+        self.data_str = [[("bold", c)] for c in FIELDS]
 
     def get_data(self):
         r = requests.get(

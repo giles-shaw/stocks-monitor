@@ -1,3 +1,4 @@
+from functools import partial
 from numbers import Number
 from pathlib import Path
 from sys import argv
@@ -17,7 +18,7 @@ FIELDS = ["symbol", "iexRealtimePrice",
           "open", "close", "marketCap", "peRatio"]
 
 
-def _handle_input(data, key):
+def handle_input(data, key):
     if key in ("q", "Q"):
         raise urwid.ExitMainLoop()
     if key in [str(i) for i in range(len(FIELDS))]:
@@ -105,10 +106,9 @@ def gui(data: Data):
                              for c, v in str_data.items()], dividechars=1)
     fill = urwid.Filler(columns, "top")
 
-    def handle_input(key):
-        return _handle_input(data, key)
-
-    loop = urwid.MainLoop(fill, palette=palette, unhandled_input=handle_input)
+    loop = urwid.MainLoop(
+        fill, palette=palette, unhandled_input=partial(handle_input, data)
+    )
     loop.set_alarm_in(0, refresh, (data, columns))
     loop.run()
 

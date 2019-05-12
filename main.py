@@ -40,7 +40,7 @@ def format_entry(e):
 class Data:
     def __init__(self, symbols):
         self.symbols = symbols
-        self.data = pd.DataFrame([])
+        self.data = pd.DataFrame([], columns=FIELDS)
 
     def get_data(self):
         r = requests.get(
@@ -106,10 +106,9 @@ def gui(data: Data):
 
     palette = [("bold", "light red,bold", "default")]
 
-    str_data = dict((field, urwid.Text("")) for field in FIELDS)
+    str_data = [urwid.Text("") for field in FIELDS]
 
-    columns = urwid.Columns([("pack", v)
-                             for c, v in str_data.items()], dividechars=1)
+    columns = urwid.Columns([("pack", v) for v in str_data], dividechars=1)
     fill = urwid.Filler(columns, "top")
 
     user_input = UserInput()

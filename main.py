@@ -18,11 +18,13 @@ FIELDS = ["symbol", "iexRealtimePrice",
           "open", "close", "marketCap", "peRatio"]
 
 
-def handle_input(user_input, key):
-    if key in ("q", "Q"):
-        raise urwid.ExitMainLoop()
-    if key in [str(i) for i in range(len(FIELDS))]:
-        user_input.sort_key = FIELDS[int(key)]
+def sort_data(data, sort_key):
+    if sort_key:
+        return data.sort_values(
+            by=sort_key, ascending=(
+                True if data[sort_key].dtype == "object" else False)
+        )
+    return data
 
 
 def format_entry(e):
@@ -35,6 +37,17 @@ def format_entry(e):
         return "\n" + f"{e:.2f}"
     else:
         raise NotImplementedError
+
+
+def format_data(data):
+    df_str = data.applymap(format_entry)
+    text_cols = [[("bold", c)] + df_str[c].tolist() for c in list(df_str)]
+
+    return [urwid.Text(tc) for tc in text_cols]
+
+
+def process_for_gui(data, sort_key):
+    return format_data(sort_data(data, sort_key))
 
 
 class Data:
@@ -64,27 +77,6 @@ class Data:
             sleep(delay)
 
 
-def sort_data(data, sort_key):
-    if sort_key:
-        return data.sort_values(
-            by=sort_key, ascending=(
-                True if data[sort_key].dtype == "object" else False)
-        )
-    else:
-        return data
-
-
-def format_data(data):
-    df_str = data.applymap(format_entry)
-    text_cols = [[("bold", c)] + df_str[c].tolist() for c in list(df_str)]
-
-    return [urwid.Text(tc) for tc in text_cols]
-
-
-def process_for_gui(data, sort_key):
-    return format_data(sort_data(data, sort_key))
-
-
 class UserInput:
     def __init__(self):
         self.sort_key = None
@@ -102,6 +94,13 @@ def refresh(loop: urwid.MainLoop, args):
     ]
 
     loop.set_alarm_in(0.5, refresh, (data, columns, user_input))
+
+
+def handle_input(user_input, key):
+    if key in ("q", "Q"):
+        raise urwid.ExitMainLoop()
+    if key in [str(i) for i in range(len(FIELDS))]:
+        user_input.sort_key = FIELDS[int(key)]
 
 
 def gui(data: Data):

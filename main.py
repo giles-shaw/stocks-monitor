@@ -96,26 +96,26 @@ def refresh(loop: urwid.MainLoop, args):
 
     # Not always guaranteed that this is atomic, so code need not be
     # threadsafe.
-    str_data = process_for_gui(data.data, user_input.sort_key)
-    columns.contents = [(c, columns.options("pack")) for c in str_data]
+    columns.contents = [
+        (c, columns.options("pack"))
+        for c in process_for_gui(data.data, user_input.sort_key)
+    ]
 
     loop.set_alarm_in(0.5, refresh, (data, columns, user_input))
 
 
 def gui(data: Data):
 
-    palette = [("bold", "light red,bold", "default")]
-
-    str_data = [urwid.Text("") for field in FIELDS]
-
-    columns = urwid.Columns([("pack", v) for v in str_data], dividechars=1)
+    columns = urwid.Columns([("pack", urwid.Text(""))]
+                            * len(FIELDS), dividechars=1)
     fill = urwid.Filler(columns, "top")
 
     user_input = UserInput()
 
     loop = urwid.MainLoop(
-        fill, palette=palette, unhandled_input=partial(
-            handle_input, user_input)
+        fill,
+        palette=[("bold", "light red,bold", "default")],
+        unhandled_input=partial(handle_input, user_input),
     )
     loop.set_alarm_in(0, refresh, (data, columns, user_input))
     loop.run()
@@ -124,9 +124,8 @@ def gui(data: Data):
 def stocks_monitor(symbols: List[str]):
 
     data = Data(symbols)
-    updater = Thread(target=data.update_loop, daemon=True)
-    updater.start()
 
+    Thread(target=data.update_loop, daemon=True).start()
     gui(data)
 
 

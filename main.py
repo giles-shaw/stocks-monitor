@@ -56,11 +56,12 @@ class Data:
             lambda e: e + random.normal(0, 0.1) if isinstance(e, Number) else e
         )
 
-    def update_loop(self, delay=5):
-        self.data = self.get_data()
+    def update_loop(self, fake=True, delay=5):
         while True:
+            self.data = self.get_data()
+            if fake:
+                self.data = self.get_fake_data()
             sleep(delay)
-            self.data = self.get_fake_data()
 
 
 def sort_data(data, sort_key):

@@ -18,11 +18,11 @@ FIELDS = ["symbol", "iexRealtimePrice",
           "open", "close", "marketCap", "peRatio"]
 
 
-def handle_input(data, key):
+def handle_input(user_input, key):
     if key in ("q", "Q"):
         raise urwid.ExitMainLoop()
     if key in [str(i) for i in range(len(FIELDS))]:
-        data.sort_by_col = FIELDS[int(key)]
+        user_input.sort_key = FIELDS[int(key)]
 
 
 def format_entry(e):
@@ -41,8 +41,6 @@ class Data:
     def __init__(self, symbols):
         self.symbols = symbols
         self.data = pd.DataFrame([])
-        self.data_str = [[("bold", c)] for c in FIELDS]
-        self.sort_by_col = None
 
     def get_data(self):
         r = requests.get(
@@ -52,22 +50,6 @@ class Data:
         flattened = {k: v["quote"] for k, v in r.json().items()}
         return pd.DataFrame.from_dict(flattened, orient="index")[FIELDS]
 
-    def get_sorted_data(self):
-        if self.sort_by_col:
-            return self.data.sort_values(
-                by=self.sort_by_col,
-                ascending=(
-                    True if self.data[self.sort_by_col].dtype == "object" else False
-                ),
-            )
-        else:
-            return self.data
-
-    def get_data_str(self):
-        df_str = self.data.applymap(format_entry)
-
-        return [[("bold", c)] + df_str[c].tolist() for c in list(df_str)]
-
     def get_fake_data(self):
 
         return self.data.applymap(
@@ -75,25 +57,48 @@ class Data:
         )
 
     def update_loop(self, delay=5):
+        self.data = self.get_data()
         while True:
-            self.data = self.get_data()
-            self.data = self.get_sorted_data()
-            self.data_str = self.get_data_str()
             sleep(delay)
+            self.data = self.get_fake_data()
+
+
+def sort_data(data, sort_key):
+    if sort_key:
+        return data.sort_values(
+            by=sort_key, ascending=(
+                True if data[sort_key].dtype == "object" else False)
+        )
+    else:
+        return data
+
+
+def format_data(data):
+    df_str = data.applymap(format_entry)
+    text_cols = [[("bold", c)] + df_str[c].tolist() for c in list(df_str)]
+
+    return [urwid.Text(tc) for tc in text_cols]
+
+
+def process_for_gui(data, sort_key):
+    return format_data(sort_data(data, sort_key))
+
+
+class UserInput:
+    def __init__(self):
+        self.sort_key = None
 
 
 def refresh(loop: urwid.MainLoop, args):
 
-    data, columns = args
+    data, columns, user_input = args
 
     # Not always guaranteed that this is atomic, so code need not be
     # threadsafe.
-    new_values = data.data_str
-
-    str_data = [urwid.Text(c) for c in new_values]
+    str_data = process_for_gui(data.data, user_input.sort_key)
     columns.contents = [(c, columns.options("pack")) for c in str_data]
 
-    loop.set_alarm_in(1, refresh, (data, columns))
+    loop.set_alarm_in(0.5, refresh, (data, columns, user_input))
 
 
 def gui(data: Data):
@@ -106,10 +111,13 @@ def gui(data: Data):
                              for c, v in str_data.items()], dividechars=1)
     fill = urwid.Filler(columns, "top")
 
+    user_input = UserInput()
+
     loop = urwid.MainLoop(
-        fill, palette=palette, unhandled_input=partial(handle_input, data)
+        fill, palette=palette, unhandled_input=partial(
+            handle_input, user_input)
     )
-    loop.set_alarm_in(0, refresh, (data, columns))
+    loop.set_alarm_in(0, refresh, (data, columns, user_input))
     loop.run()
 
 

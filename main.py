@@ -64,10 +64,12 @@ class Data:
         return pd.DataFrame.from_dict(flattened, orient="index")[FIELDS]
 
     def get_fake_data(self):
+        def noise(e):
+            if isinstance(e, Number):
+                return e + random.normal(0, 0.1)
+            return e
 
-        return self.data.applymap(
-            lambda e: e + random.normal(0, 0.1) if isinstance(e, Number) else e
-        )
+        return self.data.applymap(noise)
 
     def update_loop(self, fake=True, delay=5):
         while True:

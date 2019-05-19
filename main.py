@@ -16,14 +16,22 @@ IEX_BATCH_URL = "https://api.iextrading.com/1.0/stock/market/batch"
 
 FIELDS = ["symbol", "iexRealtimePrice",
           "open", "close", "marketCap", "peRatio"]
+ALIASES = dict(
+    [("iexRealtimePrice", "current"), ("peRatio", "p/e"), ("marketCap", "mktCap")]
+)
+FIELDS = {**dict([(f, f) for f in FIELDS]), **ALIASES}
 
 
 def sort_data(data, sort_key):
     if sort_key:
-        return data.sort_values(
-            by=sort_key, ascending=(
-                True if data[sort_key].dtype == "object" else False)
-        )
+        try:
+            field = list(data)[sort_key]
+            return data.sort_values(
+                by=field, ascending=(
+                    True if data[field].dtype == "object" else False)
+            )
+        except IndexError:
+            pass
     return data
 
 
@@ -53,7 +61,7 @@ def process_for_gui(data, sort_key):
 class Data:
     def __init__(self, symbols):
         self.symbols = symbols
-        self.data = pd.DataFrame([], columns=FIELDS)
+        self.data = pd.DataFrame([], columns=list(FIELDS.values()))
 
     def get_data(self):
         r = requests.get(
@@ -61,7 +69,9 @@ class Data:
                 self.symbols), "types": "quote"}
         )
         flattened = {k: v["quote"] for k, v in r.json().items()}
-        return pd.DataFrame.from_dict(flattened, orient="index")[FIELDS]
+        return pd.DataFrame.from_dict(flattened, orient="index").rename(
+            FIELDS, axis="columns"
+        )[list(FIELDS.values())]
 
     def get_fake_data(self):
         def noise(e):
@@ -101,8 +111,10 @@ def refresh(loop: urwid.MainLoop, args):
 def handle_input(user_input, key):
     if key in ("q", "Q"):
         raise urwid.ExitMainLoop()
-    if key in [str(i) for i in range(len(FIELDS))]:
-        user_input.sort_key = FIELDS[int(key)]
+    try:
+        user_input.sort_key = int(key)
+    except ValueError:
+        pass
 
 
 def gui(data: Data):

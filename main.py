@@ -119,7 +119,7 @@ def handle_input(user_input, key):
 def gui(data: Data):
 
     columns = urwid.Columns([("pack", urwid.Text(""))]
-                            * len(FIELDS), dividechars=1)
+                            * len(FIELDS), dividechars=3)
     fill = urwid.Filler(columns, "top")
 
     user_input = UserInput()

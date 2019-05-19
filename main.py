@@ -98,8 +98,7 @@ def refresh(loop: urwid.MainLoop, args):
 
     data, columns, user_input = args
 
-    # Not always guaranteed that this is atomic, so code need not be
-    # threadsafe.
+    # Don't know if this is threadsafe
     columns.contents = [
         (c, columns.options("pack"))
         for c in process_for_gui(data.data, user_input.sort_key)

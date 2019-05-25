@@ -23,6 +23,7 @@ FIELDS = {**dict([(f, f) for f in FIELDS]), **ALIASES}
 
 
 def sort_data(data, sort_key):
+
     if sort_key:
         try:
             field = list(data)[sort_key]
@@ -48,6 +49,7 @@ def format_entry(e):
 
 
 def format_data(data):
+
     df_str = data.applymap(format_entry)
     text_cols = [[("bold", c)] + df_str[c].tolist() for c in list(df_str)]
 
@@ -55,6 +57,7 @@ def format_data(data):
 
 
 def process_for_gui(data, sort_key):
+
     return format_data(sort_data(data, sort_key))
 
 
@@ -69,6 +72,7 @@ class Data:
                 self.symbols), "types": "quote"}
         )
         flattened = {k: v["quote"] for k, v in r.json().items()}
+
         return pd.DataFrame.from_dict(flattened, orient="index").rename(
             FIELDS, axis="columns"
         )[list(FIELDS.values())]
@@ -108,6 +112,7 @@ def refresh(loop: urwid.MainLoop, args):
 
 
 def handle_input(user_input, key):
+
     if key in ("q", "Q"):
         raise urwid.ExitMainLoop()
     try:

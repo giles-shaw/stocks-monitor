@@ -14,10 +14,20 @@ from numpy import random
 
 IEX_BATCH_URL = "https://api.iextrading.com/1.0/stock/market/batch"
 
-FIELDS = ["symbol", "iexRealtimePrice",
-          "open", "close", "marketCap", "peRatio"]
+FIELDS = [
+    "symbol",
+    "iexRealtimePrice",
+    "open",
+    "close",
+    "marketCap",
+    "peRatio",
+]
 ALIASES = dict(
-    [("iexRealtimePrice", "current"), ("peRatio", "p/e"), ("marketCap", "mktCap")]
+    [
+        ("iexRealtimePrice", "current"),
+        ("peRatio", "p/e"),
+        ("marketCap", "mktCap"),
+    ]
 )
 FIELDS = {**dict([(f, f) for f in FIELDS]), **ALIASES}
 
@@ -28,11 +38,12 @@ def sort_data(data, sort_key):
         try:
             field = list(data)[sort_key]
             return data.sort_values(
-                by=field, ascending=(
-                    True if data[field].dtype == "object" else False)
+                by=field,
+                ascending=(True if data[field].dtype == "object" else False),
             )
         except IndexError:
             pass
+
     return data
 
 
@@ -68,8 +79,8 @@ class Data:
 
     def get_data(self):
         r = requests.get(
-            IEX_BATCH_URL, params={"symbols": ",".join(
-                self.symbols), "types": "quote"}
+            IEX_BATCH_URL,
+            params={"symbols": ",".join(self.symbols), "types": "quote"},
         )
         flattened = {k: v["quote"] for k, v in r.json().items()}
 
@@ -123,8 +134,9 @@ def handle_input(user_input, key):
 
 def gui(data: Data):
 
-    columns = urwid.Columns([("pack", urwid.Text(""))]
-                            * len(FIELDS), dividechars=3)
+    columns = urwid.Columns(
+        [("pack", urwid.Text(""))] * len(FIELDS), dividechars=3
+    )
     fill = urwid.Filler(columns, "top")
 
     user_input = UserInput()

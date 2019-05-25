@@ -160,7 +160,7 @@ def stocks_monitor(symbols: List[str]):
 
 def get_symbols(argv):
 
-    path = Path.home() / Path(".sm.conf")
+    path = Path.home() / Path(".stocks-monitor.conf")
     if path.is_file():
         with open(path, "r") as f:
             return toml.load(f).get("symbols", [])

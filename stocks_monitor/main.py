@@ -49,14 +49,23 @@ def sort_data(data, sort_key):
 
 def format_entry(e):
 
-    if isinstance(e, str):
-        return "\n" + e
-    elif isinstance(e, int) or e is None:
+    if isinstance(e, Number):
+        return format_number(e)
+    else:
         return "\n" + str(e)
+
+
+def format_number(e):
+    if e > 10 ** 12:
+        return "\n" + f"{e / (10 ** 12):.2f}" + "T"
+    elif e > 10 ** 9:
+        return "\n" + f"{e / (10 ** 9):.2f}" + "B"
+    elif e > 10 ** 6:
+        return "\n" + f"{e / (10 ** 6):.2f}" + "M"
     elif isinstance(e, float):
         return "\n" + f"{e:.2f}"
-    else:
-        raise NotImplementedError
+    elif isinstance(e, int):
+        return "\n" + str(e)
 
 
 def format_data(data):

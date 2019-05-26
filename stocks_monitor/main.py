@@ -148,12 +148,11 @@ def gui(data: Data) -> None:
     columns = urwid.Columns(
         [("pack", urwid.Text(""))] * len(FIELDS), dividechars=3
     )
-    fill = urwid.Filler(columns, "top")
 
     user_input = UserInput()
 
     loop = urwid.MainLoop(
-        fill,
+        fill=urwid.Filler(columns, "top"),
         palette=[("bold", "light red,bold", "default")],
         unhandled_input=partial(handle_input, user_input),
     )

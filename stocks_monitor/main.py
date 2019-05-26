@@ -4,7 +4,7 @@ from pathlib import Path
 from sys import argv
 from threading import Thread
 from time import sleep
-from typing import List
+from typing import Any, List, Tuple
 
 import pandas as pd
 import requests
@@ -32,7 +32,7 @@ ALIASES = dict(
 FIELDS = {**dict([(f, f) for f in FIELDS]), **ALIASES}
 
 
-def sort_data(data, sort_key):
+def sort_data(data: pd.DataFrame, sort_key: int) -> pd.DataFrame:
 
     if sort_key:
         try:
@@ -47,7 +47,7 @@ def sort_data(data, sort_key):
     return data
 
 
-def format_entry(e):
+def format_entry(e: Any) -> str:
 
     if isinstance(e, Number):
         return format_number(e)
@@ -55,7 +55,7 @@ def format_entry(e):
         return "\n" + str(e)
 
 
-def format_number(e):
+def format_number(e: int) -> str:
     if e > 10 ** 12:
         return "\n" + f"{e / (10 ** 12):.2f}" + "T"
     elif e > 10 ** 9:
@@ -68,7 +68,7 @@ def format_number(e):
         return "\n" + str(e)
 
 
-def format_data(data):
+def format_data(data: pd.DataFrame) -> List[urwid.Text]:
 
     df_str = data.applymap(format_entry)
     text_cols = [[("bold", c)] + df_str[c].tolist() for c in list(df_str)]
@@ -76,17 +76,17 @@ def format_data(data):
     return [urwid.Text(tc) for tc in text_cols]
 
 
-def process_for_gui(data, sort_key):
+def process_for_gui(data: pd.DataFrame, sort_key: int) -> List[urwid.Text]:
 
     return format_data(sort_data(data, sort_key))
 
 
 class Data:
-    def __init__(self, symbols):
+    def __init__(self, symbols: List[str]) -> None:
         self.symbols = symbols
         self.data = pd.DataFrame([], columns=list(FIELDS.values()))
 
-    def get_data(self):
+    def get_data(self) -> pd.DataFrame:
         r = requests.get(
             IEX_BATCH_URL,
             params={"symbols": ",".join(self.symbols), "types": "quote"},
@@ -97,7 +97,7 @@ class Data:
             FIELDS, axis="columns"
         )[list(FIELDS.values())]
 
-    def get_fake_data(self):
+    def get_fake_data(self) -> pd.DataFrame:
         def noise(e):
             if isinstance(e, Number):
                 return e + random.normal(0, 0.1)
@@ -114,11 +114,13 @@ class Data:
 
 
 class UserInput:
-    def __init__(self):
+    def __init__(self) -> None:
         self.sort_key = None
 
 
-def refresh(loop: urwid.MainLoop, args):
+def refresh(
+    loop: urwid.MainLoop, args: Tuple[pd.DataFrame, urwid.Columns, UserInput]
+) -> None:
 
     data, columns, user_input = args
 
@@ -131,7 +133,7 @@ def refresh(loop: urwid.MainLoop, args):
     loop.set_alarm_in(0.5, refresh, (data, columns, user_input))
 
 
-def handle_input(user_input, key):
+def handle_input(user_input: UserInput, key: int) -> None:
 
     if key in ("q", "Q"):
         raise urwid.ExitMainLoop()
@@ -141,7 +143,7 @@ def handle_input(user_input, key):
         pass
 
 
-def gui(data: Data):
+def gui(data: Data) -> None:
 
     columns = urwid.Columns(
         [("pack", urwid.Text(""))] * len(FIELDS), dividechars=3
@@ -159,7 +161,7 @@ def gui(data: Data):
     loop.run()
 
 
-def stocks_monitor(symbols: List[str]):
+def stocks_monitor(symbols: List[str]) -> None:
 
     data = Data(symbols)
 
@@ -167,7 +169,7 @@ def stocks_monitor(symbols: List[str]):
     gui(data)
 
 
-def get_symbols(argv):
+def get_symbols(argv: List[Any]) -> List[str]:
 
     path = Path.home() / Path(".stocks-monitor.conf")
     if path.is_file():
@@ -177,7 +179,7 @@ def get_symbols(argv):
         return argv[1:]
 
 
-def cli():
+def cli() -> None:
 
     stocks_monitor(get_symbols(argv))
 

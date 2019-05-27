@@ -99,7 +99,7 @@ class UserInput:
         self.sort_key: Optional[int] = None
 
 
-class DataFrameViewer(urwid.Filler):
+class DataFrameWidget(urwid.Filler):
     def __init__(self) -> None:
         body = urwid.Columns([], dividechars=3)
         super().__init__(body, "top")
@@ -113,13 +113,13 @@ class DataFrameViewer(urwid.Filler):
         ]
 
 
-def handle_input(fill, user_input: UserInput, key: int) -> None:
+def handle_input(df_widget, user_input: UserInput, key: int) -> None:
 
     if key in ("q", "Q"):
         raise urwid.ExitMainLoop()
     try:
         user_input.sort_key = int(key)
-        fill.generate_columns(user_input.sort_key)
+        df_widget.generate_columns(user_input.sort_key)
     except (ValueError, TypeError):
         pass
 
@@ -138,13 +138,13 @@ def draw_loop(queue, loop, user_input) -> Callable[[], None]:
 
 def gui(queue) -> None:
 
-    fill = DataFrameViewer()
+    df_widget = DataFrameWidget()
     user_input = UserInput()
 
     loop = urwid.MainLoop(
-        fill,
+        widget=df_widget,
         palette=[("bold", "light red,bold", "default")],
-        unhandled_input=partial(handle_input, fill, user_input),
+        unhandled_input=partial(handle_input, df_widget, user_input),
     )
 
     Thread(target=draw_loop(queue, loop, user_input), daemon=True).start()

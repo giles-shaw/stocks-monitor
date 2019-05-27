@@ -8,6 +8,6 @@ setup(
     author_email="giles.shaw@gmail.com",
     description="A simple stock monitor for the command line.",
     entry_points={
-        "console_scripts": ["stocks-monitor=stocks_monitor.main:cli"]
+        "console_scripts": ["stocks-monitor=stocks_monitor.cli:cli"]
     },
 )

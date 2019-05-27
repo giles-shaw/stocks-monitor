@@ -98,12 +98,25 @@ class UserInput:
         self.sort_key = None
 
 
-def handle_input(user_input: UserInput, key: int) -> None:
+class DataFrameViewer(urwid.Filler):
+    def __init__(self, *args) -> None:
+        super().__init__(*args)
+        self.data = pd.DataFrame([])
+
+    def generate_columns(self, user_input) -> None:
+        self.original_widget.contents = [
+            (c, self.original_widget.options("pack"))
+            for c in process_for_gui((self.data), user_input.sort_key)
+        ]
+
+
+def handle_input(fill, user_input: UserInput, key: int) -> None:
 
     if key in ("q", "Q"):
         raise urwid.ExitMainLoop()
     try:
         user_input.sort_key = int(key)
+        fill.generate_columns(user_input)
     except (ValueError, TypeError):
         pass
 
@@ -117,23 +130,22 @@ def gui(queue) -> None:
         ],
         dividechars=3,
     )
+    fill = DataFrameViewer(columns, "top")
 
     user_input = UserInput()
 
     loop = urwid.MainLoop(
         fill=urwid.Filler(columns, "top"),
         palette=[("bold", "light red,bold", "default")],
-        unhandled_input=partial(handle_input, user_input),
+        unhandled_input=partial(handle_input, fill, user_input),
     )
 
     def watch_for_update() -> None:
 
         while True:
             if not queue.empty():
-                columns.contents = [
-                    (c, columns.options("pack"))
-                    for c in process_for_gui(queue.get(), user_input.sort_key)
-                ]
+                fill.data = queue.get()
+                fill.generate_columns(user_input)
                 loop.draw_screen()
 
     Thread(target=watch_for_update, daemon=True).start()

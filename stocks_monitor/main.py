@@ -144,7 +144,7 @@ def stocks_monitor(symbols: List[str]) -> None:
 
     queue = Queue(1)
 
-    def update_loop(symbols, queue):
+    def update_loop(symbols: List[str], queue: Queue) -> None:
         def updater():
             while True:
                 queue.put(get_data(symbols))

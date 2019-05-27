@@ -142,7 +142,7 @@ def gui(queue) -> None:
     user_input = UserInput()
 
     loop = urwid.MainLoop(
-        fill=urwid.Filler(columns, "top"),
+        fill,
         palette=[("bold", "light red,bold", "default")],
         unhandled_input=partial(handle_input, fill, user_input),
     )

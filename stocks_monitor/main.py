@@ -104,7 +104,7 @@ def handle_input(user_input: UserInput, key: int) -> None:
         raise urwid.ExitMainLoop()
     try:
         user_input.sort_key = int(key)
-    except ValueError:
+    except (ValueError, TypeError):
         pass
 
 

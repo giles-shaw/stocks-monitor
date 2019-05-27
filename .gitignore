@@ -1,4 +1,6 @@
-__pycache__/
+*/__pycache__/
+.mypy_cache
+*/.mypy_cache/
 *.pyc
 *.egg-info/
 todo.txt

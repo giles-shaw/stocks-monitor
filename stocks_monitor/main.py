@@ -51,7 +51,7 @@ def draw_loop(
     return fn
 
 
-def gui(queue: Queue, fields: Dict[str, str]) -> None:
+def gui(queue: Queue) -> None:
 
     df_widget = DataFrameWidget(
         pd.DataFrame(data=[], columns="Fetching data ...".split())
@@ -72,4 +72,4 @@ def stocks_monitor(symbols: List[str], fields: Dict[str, str]) -> None:
 
     queue: Queue = Queue(1)
     Thread(target=update_loop(symbols, fields, queue), daemon=True).start()
-    gui(queue, fields)
+    gui(queue)

@@ -30,29 +30,27 @@ def format_number(e: Union[int, float]) -> str:
     raise ValueError
 
 
-def format_data(data: pd.DataFrame) -> List[urwid.Text]:
+def format_df(df: pd.DataFrame) -> List[urwid.Text]:
 
-    df_str = data.applymap(format_entry)
+    df_str = df.applymap(format_entry)
     text_cols = [[("bold", c)] + df_str[c].tolist() for c in df_str]
 
     return [urwid.Text(tc) for tc in text_cols]
 
 
-def sort_data(
-    data: pd.DataFrame, sort_key: Optional[int] = None
-) -> pd.DataFrame:
+def sort_df(df: pd.DataFrame, sort_key: Optional[int] = None) -> pd.DataFrame:
 
     if sort_key:
         try:
-            field = list(data)[sort_key]
-            return data.sort_values(
+            field = list(df)[sort_key]
+            return df.sort_values(
                 by=field,
-                ascending=(True if data[field].dtype == "object" else False),
+                ascending=(True if df[field].dtype == "object" else False),
             )
         except IndexError:
             pass
 
-    return data
+    return df
 
 
 class UserInput:
@@ -70,7 +68,7 @@ class DataFrameWidget(urwid.Filler):
     def generate_columns(self, sort_key: Optional[int] = None) -> None:
         self.original_widget.contents = [
             (c, self.original_widget.options("pack"))
-            for c in format_data(sort_data(self.data, sort_key))
+            for c in format_df(sort_df(self.data, sort_key))
         ]
 
     def sort_on_input(self, user_input: UserInput) -> Callable[[Any], bool]:

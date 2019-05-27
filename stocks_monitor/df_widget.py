@@ -33,7 +33,7 @@ def format_number(e: Union[int, float]) -> str:
 def format_data(data: pd.DataFrame) -> List[urwid.Text]:
 
     df_str = data.applymap(format_entry)
-    text_cols = [[("bold", c)] + df_str[c].tolist() for c in list(df_str)]
+    text_cols = [[("bold", c)] + df_str[c].tolist() for c in df_str]
 
     return [urwid.Text(tc) for tc in text_cols]
 

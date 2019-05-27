@@ -5,7 +5,7 @@ from queue import Queue
 from sys import argv
 from threading import Thread
 from time import sleep
-from typing import Any, List, Tuple
+from typing import Any, Callable, List, Optional
 
 import pandas as pd
 import requests
@@ -15,7 +15,7 @@ from numpy import random
 
 IEX_BATCH_URL = "https://api.iextrading.com/1.0/stock/market/batch"
 
-FIELDS = [
+IEX_KEYS = [
     "symbol",
     "iexRealtimePrice",
     "open",
@@ -30,7 +30,7 @@ ALIASES = dict(
         ("marketCap", "mktCap"),
     ]
 )
-FIELDS = {**dict([(f, f) for f in FIELDS]), **ALIASES}
+FIELDS = {**dict([(f, f) for f in IEX_KEYS]), **ALIASES}
 
 
 def sort_data(data: pd.DataFrame, sort_key: int) -> pd.DataFrame:
@@ -56,7 +56,7 @@ def format_entry(e: Any) -> str:
         return "\n" + str(e)
 
 
-def format_number(e: int) -> str:
+def format_number(e: Any) -> str:
     if e > 10 ** 12:
         return "\n" + f"{e / (10 ** 12):.2f}" + "T"
     elif e > 10 ** 9:
@@ -67,6 +67,7 @@ def format_number(e: int) -> str:
         return "\n" + f"{e:.2f}"
     elif isinstance(e, int):
         return "\n" + str(e)
+    raise ValueError
 
 
 def format_data(data: pd.DataFrame) -> List[urwid.Text]:
@@ -95,18 +96,20 @@ def get_data(symbols) -> pd.DataFrame:
 
 class UserInput:
     def __init__(self) -> None:
-        self.sort_key = None
+        self.sort_key: Optional[int] = None
 
 
 class DataFrameViewer(urwid.Filler):
-    def __init__(self, *args) -> None:
-        super().__init__(*args)
-        self.data = pd.DataFrame([])
+    def __init__(self) -> None:
+        body = urwid.Columns([], dividechars=3)
+        super().__init__(body, "top")
+        self.data = pd.DataFrame(data=[], columns=FIELDS.values())
+        self.generate_columns(None)
 
-    def generate_columns(self, user_input) -> None:
+    def generate_columns(self, sort_key) -> None:
         self.original_widget.contents = [
             (c, self.original_widget.options("pack"))
-            for c in process_for_gui((self.data), user_input.sort_key)
+            for c in process_for_gui((self.data), sort_key)
         ]
 
 
@@ -116,21 +119,14 @@ def handle_input(fill, user_input: UserInput, key: int) -> None:
         raise urwid.ExitMainLoop()
     try:
         user_input.sort_key = int(key)
-        fill.generate_columns(user_input)
+        fill.generate_columns(user_input.sort_key)
     except (ValueError, TypeError):
         pass
 
 
 def gui(queue) -> None:
 
-    columns = urwid.Columns(
-        [
-            ("pack", urwid.Text(("bold", f"{name}")))
-            for name in FIELDS.values()
-        ],
-        dividechars=3,
-    )
-    fill = DataFrameViewer(columns, "top")
+    fill = DataFrameViewer()
 
     user_input = UserInput()
 
@@ -145,7 +141,7 @@ def gui(queue) -> None:
         while True:
             if not queue.empty():
                 fill.data = queue.get()
-                fill.generate_columns(user_input)
+                fill.generate_columns(user_input.sort_key)
                 loop.draw_screen()
 
     Thread(target=watch_for_update, daemon=True).start()
@@ -154,10 +150,10 @@ def gui(queue) -> None:
 
 def stocks_monitor(symbols: List[str]) -> None:
 
-    queue = Queue(1)
+    queue: Queue = Queue(1)
 
-    def update_loop(symbols: List[str], queue: Queue) -> None:
-        def updater():
+    def update_loop(symbols: List[str], queue: Queue) -> Callable[[], None]:
+        def updater() -> None:
             while True:
                 queue.put(get_data(symbols))
                 sleep(5)

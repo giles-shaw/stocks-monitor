@@ -1,6 +1,7 @@
 from functools import partial
 from numbers import Number
 from pathlib import Path
+from queue import Queue
 from sys import argv
 from threading import Thread
 from time import sleep
@@ -81,56 +82,20 @@ def process_for_gui(data: pd.DataFrame, sort_key: int) -> List[urwid.Text]:
     return format_data(sort_data(data, sort_key))
 
 
-class Data:
-    def __init__(self, symbols: List[str]) -> None:
-        self.symbols = symbols
-        self.data = pd.DataFrame([], columns=list(FIELDS.values()))
+def get_data(symbols) -> pd.DataFrame:
+    r = requests.get(
+        IEX_BATCH_URL, params={"symbols": ",".join(symbols), "types": "quote"}
+    )
+    flattened = {k: v["quote"] for k, v in r.json().items()}
 
-    def get_data(self) -> pd.DataFrame:
-        r = requests.get(
-            IEX_BATCH_URL,
-            params={"symbols": ",".join(self.symbols), "types": "quote"},
-        )
-        flattened = {k: v["quote"] for k, v in r.json().items()}
-
-        return pd.DataFrame.from_dict(flattened, orient="index").rename(
-            FIELDS, axis="columns"
-        )[list(FIELDS.values())]
-
-    def get_fake_data(self) -> pd.DataFrame:
-        def noise(e):
-            if isinstance(e, Number):
-                return e + random.normal(0, 0.1)
-            return e
-
-        return self.data.applymap(noise)
-
-    def update_loop(self, fake=True, delay=5):
-        while True:
-            self.data = self.get_data()
-            if fake:
-                self.data = self.get_fake_data()
-            sleep(delay)
+    return pd.DataFrame.from_dict(flattened, orient="index").rename(
+        FIELDS, axis="columns"
+    )[list(FIELDS.values())]
 
 
 class UserInput:
     def __init__(self) -> None:
         self.sort_key = None
-
-
-def refresh(
-    loop: urwid.MainLoop, args: Tuple[pd.DataFrame, urwid.Columns, UserInput]
-) -> None:
-
-    data, columns, user_input = args
-
-    # Don't know if this is threadsafe
-    columns.contents = [
-        (c, columns.options("pack"))
-        for c in process_for_gui(data.data, user_input.sort_key)
-    ]
-
-    loop.set_alarm_in(0.5, refresh, (data, columns, user_input))
 
 
 def handle_input(user_input: UserInput, key: int) -> None:
@@ -143,10 +108,14 @@ def handle_input(user_input: UserInput, key: int) -> None:
         pass
 
 
-def gui(data: Data) -> None:
+def gui(queue) -> None:
 
     columns = urwid.Columns(
-        [("pack", urwid.Text(""))] * len(FIELDS), dividechars=3
+        [
+            ("pack", urwid.Text(("bold", f"{name}")))
+            for name in FIELDS.values()
+        ],
+        dividechars=3,
     )
 
     user_input = UserInput()
@@ -156,16 +125,35 @@ def gui(data: Data) -> None:
         palette=[("bold", "light red,bold", "default")],
         unhandled_input=partial(handle_input, user_input),
     )
-    loop.set_alarm_in(0, refresh, (data, columns, user_input))
+
+    def watch_for_update() -> None:
+
+        while True:
+            if not queue.empty():
+                columns.contents = [
+                    (c, columns.options("pack"))
+                    for c in process_for_gui(queue.get(), user_input.sort_key)
+                ]
+                loop.draw_screen()
+
+    Thread(target=watch_for_update, daemon=True).start()
     loop.run()
 
 
 def stocks_monitor(symbols: List[str]) -> None:
 
-    data = Data(symbols)
+    queue = Queue(1)
 
-    Thread(target=data.update_loop, daemon=True).start()
-    gui(data)
+    def update_loop(symbols, queue):
+        def updater():
+            while True:
+                queue.put(get_data(symbols))
+                sleep(5)
+
+        return updater
+
+    Thread(target=update_loop(symbols, queue), daemon=True).start()
+    gui(queue)
 
 
 def get_symbols(argv: List[Any]) -> List[str]:

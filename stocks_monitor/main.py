@@ -124,10 +124,21 @@ def handle_input(fill, user_input: UserInput, key: int) -> None:
         pass
 
 
+def draw_loop(queue, loop, user_input) -> Callable[[], None]:
+    def fn() -> None:
+
+        while True:
+            if not queue.empty():
+                loop.widget.data = queue.get()
+                loop.widget.generate_columns(user_input.sort_key)
+                loop.draw_screen()
+
+    return fn
+
+
 def gui(queue) -> None:
 
     fill = DataFrameViewer()
-
     user_input = UserInput()
 
     loop = urwid.MainLoop(
@@ -136,30 +147,22 @@ def gui(queue) -> None:
         unhandled_input=partial(handle_input, fill, user_input),
     )
 
-    def watch_for_update() -> None:
-
-        while True:
-            if not queue.empty():
-                fill.data = queue.get()
-                fill.generate_columns(user_input.sort_key)
-                loop.draw_screen()
-
-    Thread(target=watch_for_update, daemon=True).start()
+    Thread(target=draw_loop(queue, loop, user_input), daemon=True).start()
     loop.run()
+
+
+def update_loop(symbols: List[str], queue: Queue) -> Callable[[], None]:
+    def fn() -> None:
+        while True:
+            queue.put(get_data(symbols))
+            sleep(5)
+
+    return fn
 
 
 def stocks_monitor(symbols: List[str]) -> None:
 
     queue: Queue = Queue(1)
-
-    def update_loop(symbols: List[str], queue: Queue) -> Callable[[], None]:
-        def updater() -> None:
-            while True:
-                queue.put(get_data(symbols))
-                sleep(5)
-
-        return updater
-
     Thread(target=update_loop(symbols, queue), daemon=True).start()
     gui(queue)
 

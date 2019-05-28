@@ -60,8 +60,8 @@ class UserInput:
 
 class DataFrameWidget(urwid.Filler):
     def __init__(self, df: pd.DataFrame = pd.DataFrame([])) -> None:
-        body = urwid.Columns([], dividechars=3)
-        super().__init__(body, "top")
+        original_widget = urwid.Columns([], dividechars=3)
+        super().__init__(original_widget, "top")
         self.data = df
         self.generate_columns()
 

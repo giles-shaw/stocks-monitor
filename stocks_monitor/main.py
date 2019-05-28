@@ -47,6 +47,7 @@ def draw_loop(
                 loop.widget.data = queue.get()
                 loop.widget.generate_columns(user_input.sort_key)
                 loop.draw_screen()
+            sleep(0.1)
 
     return fn
 

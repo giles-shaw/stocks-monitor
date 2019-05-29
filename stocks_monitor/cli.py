@@ -40,7 +40,9 @@ def get_fields(path) -> Dict[str, str]:
 
     if path.is_file():
         with open(path, "r") as f:
-            return toml.load(f).get("fields")
+            d = toml.load(f).get("fields", {})
+        if d:
+            return d
     return FIELDS
 
 

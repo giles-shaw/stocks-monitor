@@ -30,6 +30,7 @@ def update_loop(
     symbols: List[str], fields: Dict[str, str], queue: Queue
 ) -> Callable[[], None]:
     def fn() -> None:
+
         while True:
             queue.put(get_data(symbols, fields))
             sleep(5)
@@ -55,7 +56,7 @@ def draw_loop(
 def gui(queue: Queue) -> None:
 
     df_widget = DataFrameWidget(
-        pd.DataFrame(data=[], columns="Fetching data ...".split())
+        pd.DataFrame(data=[], columns="Fetching data...".split())
     )
     user_input = UserInput()
 

@@ -10,7 +10,7 @@ import pandas as pd
 import requests
 import urwid
 
-from stocks_monitor.df_widget import DataFrameWidget, UserInput
+from stocks_monitor.dataframe_widget import DataFrameWidget, UserInput
 
 IEX_BATCH_URL = "https://api.iextrading.com/1.0/stock/market/batch"
 

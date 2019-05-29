@@ -2,6 +2,7 @@
 View a pd.DataFrame whose values are numbers or strings using an urwid widget
 with the ability to sort rows according to user input.
 """
+from collections import OrderedDict
 from typing import Any, Callable, List, Optional, Union
 
 import pandas as pd
@@ -17,16 +18,15 @@ def format_entry(e: Any) -> str:
 
 
 def format_number(e: Union[int, float]) -> str:
-    if e > 10 ** 12:
-        return "\n" + f"{e / (10 ** 12):.2f}" + "T"
-    elif e > 10 ** 9:
-        return "\n" + f"{e / (10 ** 9):.2f}" + "B"
-    elif e > 10 ** 6:
-        return "\n" + f"{e / (10 ** 6):.2f}" + "M"
-    elif isinstance(e, float):
-        return "\n" + f"{e:.2f}"
-    elif isinstance(e, int):
-        return "\n" + str(e)
+    def fmt(e, thresh):
+        return "\n" + f"{(e /thresh):#.5g}"
+
+    dct = OrderedDict(
+        [(10 ** 12, "T"), (10 ** 9, "B"), (10 ** 6, "M"), (1, "")]
+    )
+    for thresh, abrv in dct.items():
+        if abs(e) > thresh:
+            return fmt(e, thresh) + abrv
     raise ValueError
 
 

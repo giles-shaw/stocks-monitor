@@ -46,7 +46,7 @@ def draw_loop(
         while True:
             if not queue.empty():
                 loop.widget.data = queue.get()
-                loop.widget.generate_columns(user_input.sort_key)
+                loop.widget.refresh_columns(user_input.sort_key)
                 loop.draw_screen()
             sleep(0.1)
 

@@ -67,9 +67,9 @@ class DataFrameWidget(urwid.Filler):
         original_widget = urwid.Columns([], dividechars=3)
         super().__init__(original_widget, "top")
         self.data = df
-        self.generate_columns()
+        self.refresh_columns()
 
-    def generate_columns(self, sort_key: Optional[int] = None) -> None:
+    def refresh_columns(self, sort_key: Optional[int] = None) -> None:
         self.original_widget.contents = [
             (c, self.original_widget.options("pack"))
             for c in format_df(sort_df(self.data, sort_key))
@@ -81,7 +81,7 @@ class DataFrameWidget(urwid.Filler):
                 raise urwid.ExitMainLoop()
             try:
                 user_input.sort_key = int(key)
-                self.generate_columns(user_input.sort_key)
+                self.refresh_columns(user_input.sort_key)
                 return True
             except (ValueError, TypeError):
                 return False

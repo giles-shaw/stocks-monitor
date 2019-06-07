@@ -21,9 +21,9 @@ def get_data(symbols, fields: Dict[str, str]) -> pd.DataFrame:
     )
     flattened = {k: v["quote"] for k, v in r.json().items()}
 
-    return pd.DataFrame.from_dict(flattened, orient="index").rename(
-        fields, axis="columns"
-    )[list(fields.values())]
+    return pd.DataFrame.from_dict(flattened, orient="index")[
+        list(fields)
+    ].rename(fields, axis="columns")
 
 
 def update_loop(

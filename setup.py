@@ -10,4 +10,5 @@ setup(
     entry_points={
         "console_scripts": ["stocks-monitor=stocks_monitor.cli:cli"]
     },
+    install_requires=["numpy", "pandas", "requests", "toml", "urwid"],
 )

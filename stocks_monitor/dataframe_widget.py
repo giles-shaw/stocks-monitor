@@ -46,7 +46,7 @@ def sort_df(df: pd.DataFrame, sort_key: Optional[int] = None) -> pd.DataFrame:
 
     if sort_key:
         try:
-            field = list(df)[sort_key]
+            field = list(df)[sort_key - 1]
             return df.sort_values(
                 by=field,
                 ascending=(True if df[field].dtype == "object" else False),

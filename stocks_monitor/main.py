@@ -21,6 +21,11 @@ def get_data(symbols, fields: Dict[str, str]) -> pd.DataFrame:
     )
     flattened = {k: v["quote"] for k, v in r.json().items()}
 
+    if not set(symbols).issubset(set(flattened)):
+        raise KeyError(
+            f"Unable to retrieve stock data for: {set(symbols)-set(flattened)}"
+        )
+
     return pd.DataFrame.from_dict(flattened, orient="index")[
         list(fields)
     ].rename(fields, axis="columns")

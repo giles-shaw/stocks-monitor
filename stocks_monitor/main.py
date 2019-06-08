@@ -15,7 +15,7 @@ from stocks_monitor.dataframe_widget import DataFrameWidget, UserInput
 IEX_BATCH_URL = "https://api.iextrading.com/1.0/stock/market/batch"
 
 
-def get_data(symbols, fields: Dict[str, str]) -> pd.DataFrame:
+def get_data(symbols: List[str], fields: Dict[str, str]) -> pd.DataFrame:
 
     response = requests.get(
         IEX_BATCH_URL, params={"symbols": ",".join(symbols), "types": "quote"}

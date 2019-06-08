@@ -31,7 +31,7 @@ class SymbolNotFoundError(Exception):
     pass
 
 
-def get_symbols(args: List[str], path) -> List[str]:
+def get_symbols(args: List[str], path: Path) -> List[str]:
 
     if args:
         return args

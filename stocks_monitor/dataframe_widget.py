@@ -3,7 +3,7 @@ View a pd.DataFrame whose values are numbers or strings using an urwid widget
 with the ability to sort rows according to user input.
 """
 from collections import OrderedDict
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Union
 
 import pandas as pd
 import urwid

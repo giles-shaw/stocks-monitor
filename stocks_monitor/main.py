@@ -16,15 +16,20 @@ IEX_BATCH_URL = "https://api.iextrading.com/1.0/stock/market/batch"
 
 
 def get_data(symbols, fields: Dict[str, str]) -> pd.DataFrame:
-    r = requests.get(
+
+    response = requests.get(
         IEX_BATCH_URL, params={"symbols": ",".join(symbols), "types": "quote"}
     )
-    flattened = {k: v["quote"] for k, v in r.json().items()}
+    response.raise_for_status()
 
+    flattened = {k: v["quote"] for k, v in response.json().items()}
     if not set(symbols).issubset(set(flattened)):
         raise KeyError(
-            f"Unable to retrieve stock data for: {set(symbols)-set(flattened)}"
+            "Unable to retrieve stock data for: "
+            f"{set(symbols)-set(flattened)}"
         )
+    else:
+        return pd.DataFrame(columns="Error fetching data...".split())
 
     return pd.DataFrame.from_dict(flattened, orient="index")[
         list(fields)

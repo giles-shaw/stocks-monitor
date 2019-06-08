@@ -28,8 +28,6 @@ def get_data(symbols: List[str], fields: Dict[str, str]) -> pd.DataFrame:
             "Unable to retrieve stock data for: "
             f"{set(symbols)-set(flattened)}"
         )
-    else:
-        return pd.DataFrame(columns="Error fetching data...".split())
 
     return pd.DataFrame.from_dict(flattened, orient="index")[
         list(fields)

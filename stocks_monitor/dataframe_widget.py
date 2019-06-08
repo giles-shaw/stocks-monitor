@@ -42,24 +42,20 @@ def format_df(df: pd.DataFrame) -> List[urwid.Text]:
     ]
 
 
-def sort_df(df: pd.DataFrame, sort_key: Optional[int] = None) -> pd.DataFrame:
-
-    if sort_key:
-        try:
-            field = list(df)[sort_key - 1]
-            return df.sort_values(
-                by=field,
-                ascending=(True if df[field].dtype == "object" else False),
-            )
-        except IndexError:
-            pass
-
-    return df
-
-
-class UserInput:
+class SortInfo:
     def __init__(self) -> None:
-        self.sort_key: Optional[int] = None
+        self.sort_key: int = 1
+        self.flip_sort_order = False
+
+
+def sort_df(df: pd.DataFrame, sort_info: SortInfo) -> pd.DataFrame:
+
+    field = list(df)[sort_info.sort_key - 1]
+    sort_order = True if df[field].dtype == "object" else False
+    if sort_info.flip_sort_order:
+        sort_order = not sort_order
+
+    return df.sort_values(by=field, ascending=sort_order)
 
 
 class DataFrameWidget(urwid.Filler):
@@ -67,23 +63,30 @@ class DataFrameWidget(urwid.Filler):
         original_widget = urwid.Columns([], dividechars=3)
         super().__init__(original_widget, "top")
         self.data = df
-        self.refresh_columns()
+        self.refresh_columns(SortInfo())
 
-    def refresh_columns(self, sort_key: Optional[int] = None) -> None:
+    def refresh_columns(self, sort_info: SortInfo) -> None:
         self.original_widget.contents = [
             (c, self.original_widget.options("pack"))
-            for c in format_df(sort_df(self.data, sort_key))
+            for c in format_df(sort_df(self.data, sort_info))
         ]
 
-    def sort_on_input(self, user_input: UserInput) -> Callable[[Any], bool]:
+    def sort_on_input(self, sort_info: SortInfo) -> Callable[[Any], bool]:
         def fn(key: Any) -> bool:
             if key in ("q", "Q"):
                 raise urwid.ExitMainLoop()
+            # Ensure that input is a valid sort key.
             try:
-                user_input.sort_key = int(key)
-                self.refresh_columns(user_input.sort_key)
-                return True
-            except (ValueError, TypeError):
+                assert int(key) - 1 in range(self.data.shape[1])
+            except (AssertionError, ValueError, TypeError):
                 return False
+
+            if sort_info.sort_key == int(key):
+                sort_info.flip_sort_order = not sort_info.flip_sort_order
+            else:
+                sort_info.flip_sort_order = False
+            sort_info.sort_key = int(key)
+            self.refresh_columns(sort_info)
+            return True
 
         return fn

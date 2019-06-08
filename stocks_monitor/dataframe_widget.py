@@ -2,8 +2,8 @@
 View a pd.DataFrame whose values are numbers or strings using an urwid widget
 with the ability to sort rows according to user input.
 """
-from collections import OrderedDict
-from typing import Any, Callable, List, Union
+from collections import namedtuple, OrderedDict
+from typing import Any, Callable, Dict, List, Union
 
 import pandas as pd
 import urwid
@@ -42,20 +42,47 @@ def format_df(df: pd.DataFrame) -> List[urwid.Text]:
     ]
 
 
+SortStatus = namedtuple(
+    "SortStatus", ["ascending", "descending"], defaults=[False, False]
+)
+
+
 class SortInfo:
     def __init__(self) -> None:
         self.sort_key: int = 1
-        self.flip_sort_order = False
+        self.acting_on_input = False
+        self.sort_signature: Dict[str, SortStatus] = {}
+
+
+def get_sort_status(series: pd.Series) -> SortStatus:
+
+    consecutive_pairs = list(zip(series[:-1], series[1:]))
+
+    ascending = all(a <= b for a, b in consecutive_pairs)
+    descending = all(a >= b for a, b in consecutive_pairs)
+
+    return SortStatus(ascending, descending)
 
 
 def sort_df(df: pd.DataFrame, sort_info: SortInfo) -> pd.DataFrame:
 
     field = list(df)[sort_info.sort_key - 1]
-    sort_order = True if df[field].dtype == "object" else False
-    if sort_info.flip_sort_order:
-        sort_order = not sort_order
+    sort_signature = sort_info.sort_signature.get(field, SortStatus())
 
-    return df.sort_values(by=field, ascending=sort_order)
+    if any(sort_signature):
+        sort_order = sort_signature.ascending
+        if sort_info.acting_on_input:
+            sort_order = not sort_order
+    else:
+        sort_order = True if df[field].dtype == "object" else False
+    if sort_info.acting_on_input:
+        sort_info.acting_on_input = False
+
+    sorted_df = df.sort_values(by=field, ascending=sort_order)
+    sort_info.sort_signature = {
+        f: get_sort_status(sorted_df[f]) for f in list(df)
+    }
+    return sorted_df
 
 
 class DataFrameWidget(urwid.Filler):
@@ -81,11 +108,7 @@ class DataFrameWidget(urwid.Filler):
             except (AssertionError, ValueError, TypeError):
                 return False
 
-            if sort_info.sort_key == int(key):
-                sort_info.flip_sort_order = not sort_info.flip_sort_order
-            else:
-                sort_info.flip_sort_order = False
-            sort_info.sort_key = int(key)
+            sort_info.sort_key, sort_info.acting_on_input = int(key), True
             self.refresh_columns(sort_info)
             return True
 

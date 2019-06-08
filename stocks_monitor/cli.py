@@ -1,8 +1,8 @@
 """
 CLI for stocks_monitor.
 """
+import argparse
 from pathlib import Path
-from sys import argv
 from typing import Any, List, Dict
 
 import toml
@@ -27,16 +27,24 @@ ALIASES = dict(
 FIELDS = {**dict([(f, f) for f in IEX_KEYS]), **ALIASES}
 
 
-def get_symbols(argv: List[Any], path) -> List[str]:
+class SymbolNotFoundError(Exception):
+    pass
 
-    if path.is_file():
+
+def get_symbols(args: List[str], path) -> List[str]:
+
+    if args:
+        return args
+    elif path.is_file():
         with open(path, "r") as f:
-            return toml.load(f).get("symbols", [])
-    else:
-        return argv[1:]
+            try:
+                return toml.load(f)["symbols"]
+            except KeyError:
+                pass
+    raise SymbolNotFoundError
 
 
-def get_fields(path) -> Dict[str, str]:
+def get_fields(path: Path) -> Dict[str, str]:
 
     if path.is_file():
         with open(path, "r") as f:
@@ -48,8 +56,20 @@ def get_fields(path) -> Dict[str, str]:
 
 def cli() -> None:
 
+    parser = argparse.ArgumentParser(
+        description="display real time market information for stocks"
+    )
+    parser.add_argument(
+        "-s",
+        "--symbols",
+        nargs="+",
+        type=str,
+        help="stock ticker symbols to display",
+    )
+    args = parser.parse_args()
+
     path = Path.home() / Path(".stocks-monitor.conf")
-    stocks_monitor(get_symbols(argv, path), get_fields(path))
+    stocks_monitor(get_symbols(args.symbols, path), get_fields(path))
 
 
 if __name__ == "__main__":

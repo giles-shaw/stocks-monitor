@@ -12,10 +12,10 @@ from stocks_monitor.sort import sort_direction, df_sort_status, SortKey
 
 
 class DataFrameWidget(urwid.Filler):
-    def __init__(self, df: pd.DataFrame = pd.DataFrame([])) -> None:
+    def __init__(self, data: pd.DataFrame = pd.DataFrame([])) -> None:
         original_widget = urwid.Columns([], dividechars=3)
         super().__init__(original_widget, "top")
-        self.data = df
+        self.data = data
         self.column_sort_status = df_sort_status(self.data)
         self.sort_columns(sort_key=0, acting_on_input=False)
 

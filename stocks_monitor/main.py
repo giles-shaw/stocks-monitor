@@ -9,7 +9,7 @@ from typing import Callable, Dict, List
 import pandas as pd
 import urwid
 
-from stocks_monitor.data import get_data
+from stocks_monitor.data import get_data, get_fake_data
 from stocks_monitor.dataframe_widget import DataFrameWidget, SortKey
 
 
@@ -20,7 +20,7 @@ def update_loop(
 
         while True:
             queue.put(data())
-            sleep(5)
+            sleep(0.1)
 
     return fn
 
@@ -59,11 +59,20 @@ def gui(queue: Queue) -> None:
     loop.run()
 
 
-def stocks_monitor(symbols: List[str], fields: Dict[str, str]) -> None:
+def stocks_monitor(
+    symbols: List[str], fields: Dict[str, str], testing_mode: bool = False
+) -> None:
 
     queue: Queue = Queue(1)
-    Thread(
-        target=update_loop(lambda: get_data(symbols, fields), queue),
-        daemon=True,
-    ).start()
+    if testing_mode:
+
+        def data():
+            return get_fake_data(symbols, fields)
+
+    else:
+
+        def data():
+            return get_data(symbols, fields)
+
+    Thread(target=update_loop(data, queue), daemon=True).start()
     gui(queue)

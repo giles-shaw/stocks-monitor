@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+import numpy as np
 import pandas as pd
 import requests
 
@@ -23,3 +24,15 @@ def get_data(symbols: List[str], fields: Dict[str, str]) -> pd.DataFrame:
     return pd.DataFrame.from_dict(flattened, orient="index")[
         list(fields)
     ].rename(fields, axis="columns")
+
+
+def get_fake_data(symbols: List[str], fields: Dict[str, str]) -> pd.DataFrame:
+
+    df = get_data(symbols, fields)
+    numeric_cols = [c for c in df if df[c].dtype in (float, int)]
+    for col in numeric_cols:
+        df.loc[:, col] += np.random.normal(
+            0, df.loc[:, col].std() / 10, (len(df),)
+        )
+
+    return df

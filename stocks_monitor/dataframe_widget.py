@@ -16,6 +16,7 @@ class DataFrameWidget(urwid.Filler):
         original_widget = urwid.Columns([], dividechars=3)
         super().__init__(original_widget, "top")
         self.data = data
+
         self._column_sort_status = df_sort_status(self.data)
         self.sort_columns(sort_key=0, acting_on_input=False)
 

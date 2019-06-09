@@ -66,10 +66,19 @@ def cli() -> None:
         type=str,
         help="stock ticker symbols to display",
     )
+    parser.add_argument(
+        "-t",
+        "--test",
+        action="store_true",
+        default=False,
+        help="use fake updates to test functionality when markets are closed",
+    )
     args = parser.parse_args()
 
     path = Path.home() / Path(".stocks-monitor.conf")
-    stocks_monitor(get_symbols(args.symbols, path), get_fields(path))
+    stocks_monitor(
+        get_symbols(args.symbols, path), get_fields(path), args.test
+    )
 
 
 if __name__ == "__main__":

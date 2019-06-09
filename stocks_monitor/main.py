@@ -13,33 +13,26 @@ from stocks_monitor.data import data_feed, fake_data_feed
 from stocks_monitor.dataframe_widget import DataFrameWidget, SortKey
 
 
-def update_loop(
-    data_feed: Iterator[pd.DataFrame], queue: Queue
-) -> Callable[[], None]:
-    def fn() -> None:
+def stocks_monitor(
+    symbols: List[str], fields: Dict[str, str], testing_mode: bool = False
+) -> None:
 
-        for data in data_feed:
+    queue: Queue = Queue(1)
+
+    _data_feed = (
+        fake_data_feed(symbols, fields)
+        if testing_mode
+        else data_feed(symbols, fields)
+    )
+
+    def update_loop() -> None:
+
+        for data in _data_feed:
             queue.put(data)
             sleep(1)
 
-    return fn
-
-
-def draw_loop(
-    queue: Queue, loop: urwid.MainLoop, sort_key: SortKey
-) -> Callable[[], None]:
-    def fn() -> None:
-
-        while True:
-            if not queue.empty():
-                loop.widget.data = queue.get()
-                loop.widget.sort_columns(
-                    sort_key.sort_key, acting_on_input=False
-                )
-                loop.draw_screen()
-            sleep(0.1)
-
-    return fn
+    Thread(target=update_loop, daemon=True).start()
+    gui(queue)
 
 
 def gui(queue: Queue) -> None:
@@ -59,17 +52,18 @@ def gui(queue: Queue) -> None:
     loop.run()
 
 
-def stocks_monitor(
-    symbols: List[str], fields: Dict[str, str], testing_mode: bool = False
-) -> None:
+def draw_loop(
+    queue: Queue, loop: urwid.MainLoop, sort_key: SortKey
+) -> Callable[[], None]:
+    def fn() -> None:
 
-    queue: Queue = Queue(1)
+        while True:
+            if not queue.empty():
+                loop.widget.data = queue.get()
+                loop.widget.sort_columns(
+                    sort_key.sort_key, acting_on_input=False
+                )
+                loop.draw_screen()
+            sleep(0.1)
 
-    _data_feed = (
-        fake_data_feed(symbols, fields)
-        if testing_mode
-        else data_feed(symbols, fields)
-    )
-
-    Thread(target=update_loop(_data_feed, queue), daemon=True).start()
-    gui(queue)
+    return fn

@@ -34,7 +34,7 @@ def draw_loop(
             if not queue.empty():
                 loop.widget.data = queue.get()
                 loop.widget.sort_columns(
-                    sort_key=sort_key.sort_key, acting_on_input=False
+                    sort_key.sort_key, acting_on_input=False
                 )
                 loop.draw_screen()
             sleep(0.1)

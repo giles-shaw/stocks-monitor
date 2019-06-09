@@ -4,23 +4,23 @@ Main control flow for stocks_monitor.
 from queue import Queue
 from threading import Thread
 from time import sleep
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Iterator
 
 import pandas as pd
 import urwid
 
-from stocks_monitor.data import get_data, get_fake_data
+from stocks_monitor.data import data_feed, fake_data_feed
 from stocks_monitor.dataframe_widget import DataFrameWidget, SortKey
 
 
 def update_loop(
-    data: Callable[[], pd.DataFrame], queue: Queue
+    data_feed: Iterator[pd.DataFrame], queue: Queue
 ) -> Callable[[], None]:
     def fn() -> None:
 
-        while True:
-            queue.put(data())
-            sleep(0.1)
+        for data in data_feed:
+            queue.put(data)
+            sleep(1)
 
     return fn
 
@@ -64,15 +64,12 @@ def stocks_monitor(
 ) -> None:
 
     queue: Queue = Queue(1)
-    if testing_mode:
 
-        def data():
-            return get_fake_data(symbols, fields)
+    _data_feed = (
+        fake_data_feed(symbols, fields)
+        if testing_mode
+        else data_feed(symbols, fields)
+    )
 
-    else:
-
-        def data():
-            return get_data(symbols, fields)
-
-    Thread(target=update_loop(data, queue), daemon=True).start()
+    Thread(target=update_loop(_data_feed, queue), daemon=True).start()
     gui(queue)

@@ -33,6 +33,6 @@ def format_number(e: Union[int, float]) -> str:
     for thresh, abrv in dct.items():
         if abs(e) > thresh:
             return fmt(e, thresh) + abrv
-    if abs(e) > 0:
+    else:
         return fmt(e, 1)
     raise ValueError

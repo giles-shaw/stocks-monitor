@@ -10,7 +10,7 @@ import pandas as pd
 import requests
 import urwid
 
-from stocks_monitor.dataframe_widget import DataFrameWidget, SortInfo
+from stocks_monitor.dataframe_widget import DataFrameWidget, SortKey
 
 IEX_BATCH_URL = "https://api.iextrading.com/1.0/stock/market/batch"
 
@@ -47,14 +47,16 @@ def update_loop(
 
 
 def draw_loop(
-    queue: Queue, loop: urwid.MainLoop, sort_info: SortInfo
+    queue: Queue, loop: urwid.MainLoop, sort_key: SortKey
 ) -> Callable[[], None]:
     def fn() -> None:
 
         while True:
             if not queue.empty():
                 loop.widget.data = queue.get()
-                loop.widget.refresh_columns(sort_info)
+                loop.widget.sort_columns(
+                    sort_key=sort_key.sort_key, acting_on_input=False
+                )
                 loop.draw_screen()
             sleep(0.1)
 
@@ -66,15 +68,15 @@ def gui(queue: Queue) -> None:
     df_widget = DataFrameWidget(
         pd.DataFrame(data=[], columns="Fetching data...".split())
     )
-    sort_info = SortInfo()
+    sort_key = SortKey()
 
     loop = urwid.MainLoop(
         widget=df_widget,
         palette=[("bold", "light red,bold", "default")],
-        unhandled_input=df_widget.sort_on_input(sort_info),
+        unhandled_input=df_widget.handle_input(sort_key),
     )
 
-    Thread(target=draw_loop(queue, loop, sort_info), daemon=True).start()
+    Thread(target=draw_loop(queue, loop, sort_key), daemon=True).start()
     loop.run()
 
 

@@ -31,29 +31,6 @@ class SymbolNotFoundError(Exception):
     pass
 
 
-def get_symbols(args: List[str], path: Path) -> List[str]:
-
-    if args:
-        return args
-    elif path.is_file():
-        with open(path, "r") as f:
-            try:
-                return toml.load(f)["symbols"]
-            except KeyError:
-                pass
-    raise SymbolNotFoundError
-
-
-def get_fields(path: Path) -> Dict[str, str]:
-
-    if path.is_file():
-        with open(path, "r") as f:
-            d = toml.load(f).get("fields", {})
-        if d:
-            return d
-    return FIELDS
-
-
 def cli() -> None:
 
     parser = argparse.ArgumentParser(
@@ -79,6 +56,29 @@ def cli() -> None:
     stocks_monitor(
         get_symbols(args.symbols, path), get_fields(path), args.test
     )
+
+
+def get_symbols(args: List[str], path: Path) -> List[str]:
+
+    if args:
+        return args
+    elif path.is_file():
+        with open(path, "r") as f:
+            try:
+                return toml.load(f)["symbols"]
+            except KeyError:
+                pass
+    raise SymbolNotFoundError
+
+
+def get_fields(path: Path) -> Dict[str, str]:
+
+    if path.is_file():
+        with open(path, "r") as f:
+            d = toml.load(f).get("fields", {})
+        if d:
+            return d
+    return FIELDS
 
 
 if __name__ == "__main__":

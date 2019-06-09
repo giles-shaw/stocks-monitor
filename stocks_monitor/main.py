@@ -14,7 +14,7 @@ from stocks_monitor.dataframe_widget import DataFrameWidget, SortKey
 
 
 def stocks_monitor(
-    symbols: List[str], fields: Dict[str, str], testing_mode: bool = False
+    symbols: List[str], fields: Dict[str, str], testing_mode: bool
 ) -> None:
 
     queue: Queue = Queue(1)

@@ -46,7 +46,9 @@ class DataFrameWidget(urwid.Filler):
             # Ensure that input is a valid sort key.
             try:
                 assert int(key) - 1 in range(self.data.shape[1])
-            except (AssertionError, ValueError, TypeError):
+            except (ValueError, TypeError):
+                return False
+            except AssertionError:
                 return False
 
             sort_key.sort_key = int(key) - 1

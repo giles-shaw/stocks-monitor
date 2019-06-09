@@ -12,7 +12,7 @@ class SortKey:
 SortStatus = namedtuple("SortStatus", ["ascending", "descending"])
 
 
-def get_sort_status(series: pd.Series) -> SortStatus:
+def column_sort_status(series: pd.Series) -> SortStatus:
 
     consecutive_pairs = list(zip(series[:-1], series[1:]))
 
@@ -22,11 +22,13 @@ def get_sort_status(series: pd.Series) -> SortStatus:
     return SortStatus(ascending, descending)
 
 
-def get_sort_signature(df: pd.DataFrame) -> Tuple[SortStatus]:
-    return cast(Tuple[SortStatus], tuple(get_sort_status(df[c]) for c in df))
+def df_sort_status(df: pd.DataFrame) -> Tuple[SortStatus]:
+    return cast(
+        Tuple[SortStatus], tuple(column_sort_status(df[c]) for c in df)
+    )
 
 
-def get_sort_direction(
+def sort_direction(
     series: pd.Series, acting_on_input: bool, sort_status: SortStatus
 ) -> bool:
 

@@ -2,13 +2,13 @@
 View a pd.DataFrame whose values are numbers or strings using an urwid widget
 with the ability to sort rows according to user input.
 """
-from typing import Any, Callable, List, Union
+from typing import Any, Callable
 
 import pandas as pd
 import urwid
 
 from stocks_monitor.format import format_df
-from stocks_monitor.sort import get_sort_direction, get_sort_signature, SortKey
+from stocks_monitor.sort import sort_direction, df_sort_status, SortKey
 
 
 class DataFrameWidget(urwid.Filler):
@@ -16,23 +16,24 @@ class DataFrameWidget(urwid.Filler):
         original_widget = urwid.Columns([], dividechars=3)
         super().__init__(original_widget, "top")
         self.data = df
-        self.sort_signature = get_sort_signature(self.data)
+        self.column_sort_status = df_sort_status(self.data)
         self.sort_columns(sort_key=0, acting_on_input=False)
 
-    def get_sort_direction(self, sort_key: int, acting_on_input: bool):
-        return get_sort_direction(
+    def sort_direction(self, sort_key: int, acting_on_input: bool):
+
+        return sort_direction(
             self.data.iloc[:, sort_key],
             acting_on_input,
-            self.sort_signature[sort_key],
+            self.column_sort_status[sort_key],
         )
 
     def sort_columns(self, sort_key: int, acting_on_input: bool) -> None:
 
         sorted_df = self.data.sort_values(
             by=self.data.columns[sort_key],
-            ascending=self.get_sort_direction(sort_key, acting_on_input),
+            ascending=self.sort_direction(sort_key, acting_on_input),
         )
-        self.sort_signature = get_sort_signature(sorted_df)
+        self.column_sort_status = df_sort_status(sorted_df)
 
         self.original_widget.contents = [
             (c, self.original_widget.options("pack"))

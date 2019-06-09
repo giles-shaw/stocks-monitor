@@ -67,10 +67,10 @@ def get_sort_status(series: pd.Series) -> SortStatus:
 def sort_df(df: pd.DataFrame, sort_info: SortInfo) -> pd.DataFrame:
 
     field = list(df)[sort_info.sort_key - 1]
-    sort_signature = sort_info.sort_signature.get(field, SortStatus())
+    sort_status = sort_info.sort_signature.get(field, SortStatus())
 
-    if any(sort_signature):
-        sort_order = sort_signature.ascending
+    if any(sort_status):
+        sort_order = sort_status.ascending
         if sort_info.acting_on_input:
             sort_order = not sort_order
     else:

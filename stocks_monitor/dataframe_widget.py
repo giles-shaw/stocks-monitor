@@ -16,7 +16,7 @@ class DataFrameWidget(urwid.Filler):
         original_widget = urwid.Columns([], dividechars=3)
         super().__init__(original_widget, "top")
         self.data = data
-        self.column_sort_status = df_sort_status(self.data)
+        self._column_sort_status = df_sort_status(self.data)
         self.sort_columns(sort_key=0, acting_on_input=False)
 
     def _sort_direction(self, sort_key: int, acting_on_input: bool):
@@ -24,7 +24,7 @@ class DataFrameWidget(urwid.Filler):
         return sort_direction(
             self.data.iloc[:, sort_key],
             acting_on_input,
-            self.column_sort_status[sort_key],
+            self._column_sort_status[sort_key],
         )
 
     def sort_columns(self, sort_key: int, acting_on_input: bool) -> None:
@@ -33,7 +33,7 @@ class DataFrameWidget(urwid.Filler):
             by=self.data.columns[sort_key],
             ascending=self._sort_direction(sort_key, acting_on_input),
         )
-        self.column_sort_status = df_sort_status(sorted_df)
+        self._column_sort_status = df_sort_status(sorted_df)
 
         self.original_widget.contents = [
             (c, self.original_widget.options("pack"))

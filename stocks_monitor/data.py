@@ -41,7 +41,7 @@ def fake_data_feed(
         numeric_cols = [c for c in df if df[c].dtype in (float, int)]
         for col in numeric_cols:
             df.loc[:, col] += np.random.normal(
-                0, df.loc[:, col].std() / 10, (len(df),)
+                0, abs(df.loc[:, col].mean()) / 10, (len(df),)
             )
 
         yield df

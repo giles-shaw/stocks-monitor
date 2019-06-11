@@ -49,10 +49,8 @@ def draw_loop(
     def fn() -> None:
 
         while True:
-            if not queue.empty():
-                loop.widget.data = queue.get()
-                loop.widget.sort_columns(sort_key.sort_key, user_input=False)
-                loop.draw_screen()
-            sleep(0.1)
+            loop.widget.data = queue.get()
+            loop.widget.sort_columns(sort_key.sort_key, user_input=False)
+            loop.draw_screen()
 
     return fn

@@ -26,15 +26,15 @@ def monitor(data_feed: Iterable[pd.DataFrame]) -> None:
 
 def gui(queue: Queue) -> None:
 
-    df_widget = DataFrameWidget(
+    dataframe_widget = DataFrameWidget(
         pd.DataFrame(data=[], columns="Fetching data...".split())
     )
     sort_key = SortKey()
 
     loop = urwid.MainLoop(
-        widget=df_widget,
+        widget=dataframe_widget,
         palette=[("bold", "light red,bold", "default")],
-        unhandled_input=df_widget.handle_input(sort_key),
+        unhandled_input=dataframe_widget.handle_input(sort_key),
     )
 
     Thread(target=draw_loop(queue, loop, sort_key), daemon=True).start()

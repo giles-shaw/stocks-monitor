@@ -7,7 +7,8 @@ from typing import Any, List, Dict
 
 import toml
 
-from stocks_monitor.main import stocks_monitor
+from stocks_monitor.data import data_feed, fake_data_feed
+from stocks_monitor.main import monitor
 
 IEX_KEYS = [
     "symbol",
@@ -53,9 +54,10 @@ def cli() -> None:
     args = parser.parse_args()
 
     path = Path.home() / Path(".stocks-monitor.conf")
-    stocks_monitor(
-        get_symbols(args.symbols, path), get_fields(path), args.test
-    )
+    symbols, fields = get_symbols(args.symbols, path), get_fields(path)
+
+    stocks_feed = fake_data_feed if args.test else data_feed
+    monitor(stocks_feed(symbols, fields))
 
 
 def get_symbols(args: List[str], path: Path) -> List[str]:

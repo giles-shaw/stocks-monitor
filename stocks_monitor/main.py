@@ -4,30 +4,21 @@ Main control flow for stocks_monitor.
 from queue import Queue
 from threading import Thread
 from time import sleep
-from typing import Callable, Dict, List
+from typing import Callable, Iterable
 
 import pandas as pd
 import urwid
 
-from stocks_monitor.data import data_feed, fake_data_feed
 from stocks_monitor.dataframe_widget import DataFrameWidget, SortKey
 
 
-def stocks_monitor(
-    symbols: List[str], fields: Dict[str, str], testing_mode: bool
-) -> None:
+def monitor(data_feed: Iterable[pd.DataFrame]) -> None:
 
     queue: Queue = Queue(1)
 
-    _data_feed = (
-        fake_data_feed(symbols, fields)
-        if testing_mode
-        else data_feed(symbols, fields)
-    )
-
     def update_loop() -> None:
 
-        for data in _data_feed:
+        for data in data_feed:
             queue.put(data)
             sleep(1)
 
@@ -60,9 +51,7 @@ def draw_loop(
         while True:
             if not queue.empty():
                 loop.widget.data = queue.get()
-                loop.widget.sort_columns(
-                    sort_key.sort_key, acting_on_input=False
-                )
+                loop.widget.sort_columns(sort_key.sort_key, user_input=False)
                 loop.draw_screen()
             sleep(0.1)
 

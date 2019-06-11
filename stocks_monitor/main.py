@@ -20,7 +20,6 @@ def monitor(data_feed: Iterable[pd.DataFrame]) -> None:
 
         for data in data_feed:
             queue.put(data)
-            sleep(1)
 
     Thread(target=update_loop, daemon=True).start()
     gui(queue)

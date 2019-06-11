@@ -3,11 +3,14 @@ from typing import Dict, List
 import numpy as np
 import pandas as pd
 import requests
+from time import sleep
 
 IEX_BATCH_URL = "https://api.iextrading.com/1.0/stock/market/batch"
 
 
-def data_feed(symbols: List[str], fields: Dict[str, str]) -> pd.DataFrame:
+def data_feed(
+    symbols: List[str], fields: Dict[str, str], wait: float = 1
+) -> pd.DataFrame:
 
     while True:
         response = requests.get(
@@ -26,9 +29,12 @@ def data_feed(symbols: List[str], fields: Dict[str, str]) -> pd.DataFrame:
         yield pd.DataFrame.from_dict(flattened, orient="index")[
             list(fields)
         ].rename(fields, axis="columns")
+        sleep(wait)
 
 
-def fake_data_feed(symbols: List[str], fields: Dict[str, str]) -> pd.DataFrame:
+def fake_data_feed(
+    symbols: List[str], fields: Dict[str, str], wait: float = 1
+) -> pd.DataFrame:
 
     df = next(data_feed(symbols, fields))
     while True:
@@ -39,3 +45,4 @@ def fake_data_feed(symbols: List[str], fields: Dict[str, str]) -> pd.DataFrame:
             )
 
         yield df
+        sleep(wait)

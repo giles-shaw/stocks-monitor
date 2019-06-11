@@ -3,7 +3,6 @@ Main control flow for stocks_monitor.
 """
 from queue import Queue
 from threading import Thread
-from time import sleep
 from typing import Callable, Iterable
 
 import pandas as pd

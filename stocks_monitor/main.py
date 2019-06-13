@@ -8,8 +8,8 @@ from typing import Callable, Iterable
 import pandas as pd
 import urwid
 
-from stocks_monitor.dataframe_widget import DataFrameWidget, SortKey
-from stocks_monitor.sort import sort_direction, SortStatus, df_sort_status
+from stocks_monitor.dataframe_widget import DataFrameWidget
+from stocks_monitor.sort import sort
 
 
 def monitor(data_feed: Iterable[pd.DataFrame]) -> None:
@@ -42,37 +42,11 @@ def gui(queue: Queue) -> None:
 
 
 def update_loop(queue: Queue, loop: urwid.MainLoop) -> Callable[[], None]:
+    sorted_data = sort(queue)
+
     def fn() -> None:
-        s_key = 0
-        arrival = queue.get()
-        if not isinstance(arrival, SortKey):
-            acting_on_input = False
-            data = arrival.sort_values(
-                by=arrival.columns[s_key],
-                ascending=sort_direction(
-                    series=arrival.iloc[:, s_key],
-                    acting_on_input=acting_on_input,
-                    sort_status=SortStatus(False, False),
-                ),
-            )
-            sort_signature = df_sort_status(data)
-        while True:
-            arrival = queue.get()
-            if isinstance(arrival, SortKey):
-                s_key = arrival.sort_key
-                acting_on_input = True
-            else:
-                data = arrival
-                acting_on_input = False
-            data = data.sort_values(
-                by=data.columns[s_key],
-                ascending=sort_direction(
-                    series=data.iloc[:, s_key],
-                    acting_on_input=acting_on_input,
-                    sort_status=sort_signature[s_key],
-                ),
-            )
-            sort_signature = df_sort_status(data)
+
+        for data in sorted_data:
             loop.widget.update_columns(data)
             loop.draw_screen()
 

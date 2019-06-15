@@ -1,60 +1,38 @@
 from queue import Queue
 from collections import namedtuple
-from typing import Tuple, cast
 
 import pandas as pd
 
 
 def sort(queue: Queue) -> pd.DataFrame:
 
-    data, s_key = None, 0
-    while data is None:
+    arrival, s_key = None, 0
+    while not isinstance(arrival, pd.DataFrame):
         arrival = queue.get()
-        if not isinstance(arrival, SortKey):
-            acting_on_input = False
-            data = sort_df(arrival, s_key, False, (SortStatus(False, False),))
-            yield data
+    direction = True if arrival.iloc[:, s_key].dtype == "object" else False
+    sorted_data = arrival.sort_values(
+        by=arrival.columns[s_key], ascending=direction
+    )
+    yield sorted_data
     while True:
-        sort_signature = df_sort_status(data)
         arrival = queue.get()
-        if isinstance(arrival, SortKey):
-            s_key = arrival.sort_key
-            acting_on_input = True
+        if isinstance(arrival, pd.DataFrame):
+            sorted_data = arrival.sort_values(
+                by=arrival.columns[s_key], ascending=direction
+            )
+            yield sorted_data
         else:
-            data = arrival
-            acting_on_input = False
-        data = sort_df(data, s_key, acting_on_input, sort_signature)
-        yield data
-
-
-class SortKey:
-    def __init__(self, sort_key: int = 0) -> None:
-        self.sort_key = sort_key
+            s_key = arrival
+            sort_status = column_sort_status(sorted_data.iloc[:, s_key])
+            direction = sort_direction(
+                sorted_data.iloc[:, s_key], True, sort_status
+            )
+            yield sorted_data.sort_values(
+                by=sorted_data.columns[s_key], ascending=direction
+            )
 
 
 SortStatus = namedtuple("SortStatus", ["ascending", "descending"])
-
-
-def sort_df(
-    df: pd.DataFrame,
-    sort_key: int,
-    acting_on_input: bool,
-    previous_sort_signature: Tuple[SortStatus],
-) -> pd.DataFrame:
-    return df.sort_values(
-        by=df.columns[sort_key],
-        ascending=sort_direction(
-            series=df.iloc[:, sort_key],
-            acting_on_input=acting_on_input,
-            sort_status=previous_sort_signature[sort_key],
-        ),
-    )
-
-
-def df_sort_status(df: pd.DataFrame) -> Tuple[SortStatus]:
-    return cast(
-        Tuple[SortStatus], tuple(column_sort_status(df[c]) for c in df)
-    )
 
 
 def sort_direction(

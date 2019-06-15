@@ -37,13 +37,14 @@ def gui(queue: Queue) -> None:
         unhandled_input=dataframe_widget.handle_input(queue),
     )
 
-    Thread(target=update_loop(queue, loop), daemon=True).start()
+    sorted_data = sort(queue)
+    Thread(target=update_loop(sorted_data, loop), daemon=True).start()
     loop.run()
 
 
-def update_loop(queue: Queue, loop: urwid.MainLoop) -> Callable[[], None]:
-    sorted_data = sort(queue)
-
+def update_loop(
+    sorted_data: Iterable[pd.DataFrame], loop: urwid.MainLoop
+) -> Callable[[], None]:
     def fn() -> None:
 
         for data in sorted_data:

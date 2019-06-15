@@ -3,7 +3,7 @@ CLI for stocks_monitor.
 """
 import argparse
 from pathlib import Path
-from typing import Any, List, Dict
+from typing import List, Dict
 
 import toml
 

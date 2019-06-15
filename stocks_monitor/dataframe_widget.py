@@ -9,7 +9,6 @@ import pandas as pd
 import urwid
 
 from stocks_monitor.format import format_df
-from stocks_monitor.sort import SortKey
 
 
 class DataFrameWidget(urwid.Filler):
@@ -37,7 +36,7 @@ class DataFrameWidget(urwid.Filler):
             except AssertionError:
                 return False
 
-            queue.put(SortKey(int(key) - 1))
+            queue.put(int(key) - 1)
             return True
 
         return fn

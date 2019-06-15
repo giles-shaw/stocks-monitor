@@ -9,27 +9,30 @@ def sort(queue: Queue) -> pd.DataFrame:
     arrival, s_key = None, 0
     while not isinstance(arrival, pd.DataFrame):
         arrival = queue.get()
-    direction = True if arrival.iloc[:, s_key].dtype == "object" else False
+
+    direction = sort_direction(
+        arrival.iloc[:, s_key], False, SortStatus(False, False)
+    )
     sorted_data = arrival.sort_values(
         by=arrival.columns[s_key], ascending=direction
     )
     yield sorted_data
-    while True:
-        arrival = queue.get()
+
+    for arrival in iter(queue.get, None):
         if isinstance(arrival, pd.DataFrame):
             sorted_data = arrival.sort_values(
                 by=arrival.columns[s_key], ascending=direction
             )
-            yield sorted_data
         else:
             s_key = arrival
             sort_status = column_sort_status(sorted_data.iloc[:, s_key])
             direction = sort_direction(
                 sorted_data.iloc[:, s_key], True, sort_status
             )
-            yield sorted_data.sort_values(
+            sorted_data = sorted_data.sort_values(
                 by=sorted_data.columns[s_key], ascending=direction
             )
+        yield sorted_data
 
 
 SortStatus = namedtuple("SortStatus", ["ascending", "descending"])
@@ -42,8 +45,8 @@ def sort_direction(
     if not any(sort_status):
         return True if series.dtype == "object" else False
     else:
-        # If the column is already sorted in a direction and the user has
-        # acted, reverse the sorting direction. Otherwise, maintain it.
+        # If the column is already sorted and the user has acted, reverse the
+        # sorting direction. Otherwise, maintain it.
         if acting_on_input:
             return not sort_status.ascending
         else:

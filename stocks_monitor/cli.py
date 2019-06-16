@@ -95,7 +95,7 @@ def get_token(path: Path) -> str:
 
     if path.is_file():
         with open(path, "r") as f:
-            d = toml.load(f).get("iex_public_key", "")
+            d = toml.load(f).get("iex_publishable_token")
         if d:
             return d
     raise KeyError("Public API token not found.")

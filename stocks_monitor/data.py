@@ -1,21 +1,28 @@
-from typing import Dict, List
+from typing import Dict, List, Iterator
 
 import numpy as np
 import pandas as pd
 import requests
 from time import sleep
 
-IEX_BATCH_URL = "https://api.iextrading.com/1.0/stock/market/batch"
+IEX_BATCH_URL = "https://cloud.iexapis.com/stable/stock/market/batch"
 
 
 def data_feed(
-    symbols: List[str], fields: Dict[str, str], wait: float = 1
-) -> pd.DataFrame:
+    symbols: List[str],
+    fields: Dict[str, str],
+    token: str,
+    wait: float = 1,
+) -> Iterator[pd.DataFrame]:
 
     while True:
         response = requests.get(
             IEX_BATCH_URL,
-            params={"symbols": ",".join(symbols), "types": "quote"},
+            params={
+                "symbols": ",".join(symbols),
+                "types": "quote",
+                "token": token,
+            },
         )
         response.raise_for_status()
 
@@ -33,10 +40,13 @@ def data_feed(
 
 
 def fake_data_feed(
-    symbols: List[str], fields: Dict[str, str], wait: float = 1
-) -> pd.DataFrame:
+    symbols: List[str],
+    fields: Dict[str, str],
+    token: str,
+    wait: float = 1,
+) -> Iterator[pd.DataFrame]:
 
-    df = next(data_feed(symbols, fields))
+    df = next(data_feed(symbols, fields, token))
     while True:
         numeric_cols = [c for c in df if df[c].dtype in (float, int)]
         for col in numeric_cols:

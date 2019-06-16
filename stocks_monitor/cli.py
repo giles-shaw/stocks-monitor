@@ -3,8 +3,9 @@ CLI for stocks_monitor.
 """
 import argparse
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Iterator, Callable
 
+import pandas as pd
 import toml
 
 from stocks_monitor.data import data_feed, fake_data_feed
@@ -53,11 +54,18 @@ def cli() -> None:
     )
     args = parser.parse_args()
 
-    path = Path.home() / Path(".stocks-monitor.conf")
-    symbols, fields = get_symbols(args.symbols, path), get_fields(path)
+    config_path = Path.home() / Path(".stocks-monitor/config.toml")
+    token_path = Path.home() / Path(".stocks-monitor/credentials.toml")
+    symbols, fields, token = (
+        get_symbols(args.symbols, config_path),
+        get_fields(config_path),
+        get_token(token_path),
+    )
 
-    stocks_feed = fake_data_feed if args.test else data_feed
-    monitor(stocks_feed(symbols, fields))
+    stocks_feed: Callable[
+        [List[str], Dict[str, str], str], Iterator[pd.DataFrame]
+    ] = fake_data_feed if args.test else data_feed
+    monitor(stocks_feed(symbols, fields, token))
 
 
 def get_symbols(args: List[str], path: Path) -> List[str]:
@@ -81,6 +89,16 @@ def get_fields(path: Path) -> Dict[str, str]:
         if d:
             return d
     return FIELDS
+
+
+def get_token(path: Path) -> str:
+
+    if path.is_file():
+        with open(path, "r") as f:
+            d = toml.load(f).get("iex_public_key", "")
+        if d:
+            return d
+    raise KeyError("Public API token not found.")
 
 
 if __name__ == "__main__":

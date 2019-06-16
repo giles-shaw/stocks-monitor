@@ -9,41 +9,36 @@ IEX_BATCH_URL = "https://cloud.iexapis.com/stable/stock/market/batch"
 
 
 def data_feed(
-    symbols: List[str],
-    fields: Dict[str, str],
-    token: str,
-    wait: float = 1,
+    symbols: List[str], fields: Dict[str, str], token: str, wait: float = 1
 ) -> Iterator[pd.DataFrame]:
 
     while True:
-        response = requests.get(
-            IEX_BATCH_URL,
-            params={
-                "symbols": ",".join(symbols),
-                "types": "quote",
-                "token": token,
-            },
-        )
-        response.raise_for_status()
-
-        flattened = {k: v["quote"] for k, v in response.json().items()}
-        if not set(symbols).issubset(set(flattened)):
-            raise KeyError(
-                "Unable to retrieve stock data for: "
-                f"{set(symbols)-set(flattened)}"
+        with requests.Session() as s:
+            response = s.get(
+                IEX_BATCH_URL,
+                params={
+                    "symbols": ",".join(symbols),
+                    "types": "quote",
+                    "token": token,
+                },
             )
+            response.raise_for_status()
 
-        yield pd.DataFrame.from_dict(flattened, orient="index")[
-            list(fields)
-        ].rename(fields, axis="columns")
-        sleep(wait)
+            flattened = {k: v["quote"] for k, v in response.json().items()}
+            if not set(symbols).issubset(set(flattened)):
+                raise KeyError(
+                    "Unable to retrieve stock data for: "
+                    f"{set(symbols)-set(flattened)}"
+                )
+
+            yield pd.DataFrame.from_dict(flattened, orient="index")[
+                list(fields)
+            ].rename(fields, axis="columns")
+            sleep(wait)
 
 
 def fake_data_feed(
-    symbols: List[str],
-    fields: Dict[str, str],
-    token: str,
-    wait: float = 1,
+    symbols: List[str], fields: Dict[str, str], token: str, wait: float = 1
 ) -> Iterator[pd.DataFrame]:
 
     df = next(data_feed(symbols, fields, token))

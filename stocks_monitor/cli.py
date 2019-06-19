@@ -72,33 +72,23 @@ def get_symbols(args: List[str], path: Path) -> List[str]:
 
     if args:
         return args
-    elif path.is_file():
-        with open(path, "r") as f:
-            try:
-                return toml.load(f)["symbols"]
-            except KeyError:
-                pass
-    raise SymbolNotFoundError
+    with open(path, "r") as f:
+        return toml.load(f)["symbols"]
 
 
 def get_fields(path: Path) -> Dict[str, str]:
 
-    if path.is_file():
+    try:
         with open(path, "r") as f:
-            d = toml.load(f).get("fields", {})
-        if d:
-            return d
-    return FIELDS
+            return toml.load(f)["fields"]
+    except (FileNotFoundError, IsADirectoryError, KeyError):
+        return FIELDS
 
 
 def get_token(path: Path) -> str:
 
-    if path.is_file():
-        with open(path, "r") as f:
-            d = toml.load(f).get("iex_publishable_token")
-        if d:
-            return d
-    raise KeyError("Public API token not found.")
+    with open(path, "r") as f:
+        return toml.load(f)["iex_publishable_token"]
 
 
 if __name__ == "__main__":

@@ -11,4 +11,5 @@ setup(
         "console_scripts": ["stocks-monitor=stocks_monitor.cli:cli"]
     },
     install_requires=["numpy", "pandas", "requests", "toml", "urwid"],
+    python_requires=">=3.7",
 )

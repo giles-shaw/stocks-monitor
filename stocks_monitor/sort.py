@@ -7,15 +7,15 @@ import pandas as pd
 
 def sort(queue: Queue) -> Iterable[pd.DataFrame]:
 
-    arrival, s_key = None, 0
+    arrival, sort_key = None, 0
     while not isinstance(arrival, pd.DataFrame):
         arrival = queue.get()
 
     direction = sort_direction(
-        arrival.iloc[:, s_key], False, SortStatus.unsorted
+        arrival.iloc[:, sort_key], False, SortStatus.unsorted
     )
     sorted_data = arrival.sort_values(
-        by=arrival.columns[s_key], ascending=direction
+        by=arrival.columns[sort_key], ascending=direction
     )
     yield sorted_data
 
@@ -23,16 +23,16 @@ def sort(queue: Queue) -> Iterable[pd.DataFrame]:
         arrival = queue.get()
         if isinstance(arrival, pd.DataFrame):
             sorted_data = arrival.sort_values(
-                by=arrival.columns[s_key], ascending=direction
+                by=arrival.columns[sort_key], ascending=direction
             )
         else:
-            s_key = arrival
-            sort_status = column_sort_status(sorted_data.iloc[:, s_key])
+            sort_key = arrival
+            sort_status = column_sort_status(sorted_data.iloc[:, sort_key])
             direction = sort_direction(
-                sorted_data.iloc[:, s_key], True, sort_status
+                sorted_data.iloc[:, sort_key], True, sort_status
             )
             sorted_data = sorted_data.sort_values(
-                by=sorted_data.columns[s_key], ascending=direction
+                by=sorted_data.columns[sort_key], ascending=direction
             )
         yield sorted_data
 

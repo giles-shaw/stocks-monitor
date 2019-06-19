@@ -1,4 +1,4 @@
-from collections import namedtuple
+from enum import Enum
 from queue import Queue
 from typing import Iterable
 
@@ -12,7 +12,7 @@ def sort(queue: Queue) -> Iterable[pd.DataFrame]:
         arrival = queue.get()
 
     direction = sort_direction(
-        arrival.iloc[:, s_key], False, SortStatus(False, False)
+        arrival.iloc[:, s_key], False, SortStatus.unsorted
     )
     sorted_data = arrival.sort_values(
         by=arrival.columns[s_key], ascending=direction
@@ -37,29 +37,35 @@ def sort(queue: Queue) -> Iterable[pd.DataFrame]:
         yield sorted_data
 
 
-SortStatus = namedtuple("SortStatus", ["ascending", "descending"])
+SortStatus = Enum("SortStatus", ["unsorted", "ascending", "descending"])
 
 
 def sort_direction(
     series: pd.Series, acting_on_input: bool, sort_status: SortStatus
 ) -> bool:
 
-    if not any(sort_status):
+    if sort_status == SortStatus.unsorted:
         return True if series.dtype == "object" else False
     else:
         # If the column is already sorted and the user has acted, reverse the
         # sorting direction. Otherwise, maintain it.
         if acting_on_input:
-            return not sort_status.ascending
+            if sort_status == SortStatus.ascending:
+                return False
+            return True
         else:
-            return sort_status.ascending
+            if sort_status == SortStatus.ascending:
+                return True
+            return False
 
 
 def column_sort_status(series: pd.Series) -> SortStatus:
 
     consecutive_pairs = list(zip(series[:-1], series[1:]))
 
-    ascending = all(a <= b for a, b in consecutive_pairs)
-    descending = all(a >= b for a, b in consecutive_pairs)
-
-    return SortStatus(ascending, descending)
+    if all(a <= b for a, b in consecutive_pairs):
+        return SortStatus.ascending
+    elif all(a >= b for a, b in consecutive_pairs):
+        return SortStatus.descending
+    else:
+        return SortStatus.unsorted

@@ -1,10 +1,11 @@
-from queue import Queue
 from collections import namedtuple
+from queue import Queue
+from typing import Iterable
 
 import pandas as pd
 
 
-def sort(queue: Queue) -> pd.DataFrame:
+def sort(queue: Queue) -> Iterable[pd.DataFrame]:
 
     arrival, s_key = None, 0
     while not isinstance(arrival, pd.DataFrame):
@@ -18,7 +19,8 @@ def sort(queue: Queue) -> pd.DataFrame:
     )
     yield sorted_data
 
-    for arrival in iter(queue.get, None):
+    while True:
+        arrival = queue.get()
         if isinstance(arrival, pd.DataFrame):
             sorted_data = arrival.sort_values(
                 by=arrival.columns[s_key], ascending=direction

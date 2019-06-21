@@ -9,11 +9,13 @@ Once your `credentials.toml` file is in place, simply run, for instance,
 ```
 stocks-monitor -s AAPL MSFT
 ```
-to display up to date stock information. If the markets are closed, use 
+to display up to date stock information.
+
+If the markets are closed, use 
 ```
 stocks-monitor -t -s AAPL MSFT
 ```
-in order to run `stocks-monitor` in testing mode with simulated data based on closing prices.
+to run `stocks-monitor` in testing mode with simulated data based on closing prices.
 
 `stocks-monitor` can sort the information it presents to you according to any of the columns displayed. Simply press the index key of the corresponding column (i.e., press `1` to sort by the first column, `2` to sort by the first column...). `stocks-monitor` will sort numeric columns in descending order and text based columns in ascending order. Attempting to sort an already sorted column will reverse the sort order.
 

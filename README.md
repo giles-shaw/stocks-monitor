@@ -21,7 +21,7 @@ to run `stocks-monitor` in testing mode with simulated data based on closing pri
 
 ## Configuration
 
-`stocks-monitor` can be configured to run with a default set of stock ticker symbols. To do this, create a `config.toml` file following the schema provided in `templates` and place this in your home folder. Running `stocks-monitor` or `stocks-monitor -t` will now refer to your default list of ticker symbols from here on after.
+`stocks-monitor` can be configured to run with a default set of stock ticker symbols. To do this, create a `config.toml` file following the schema provided in `templates` and place this in your home folder. Running `stocks-monitor` or `stocks-monitor -t` without additional arguments will now refer to your default list of ticker symbols from here on after.
 
 Additionally, `config.toml` allows for `stocks-monitor` to be configured to display any stock attributes which are accessible via the `IEX Cloud` `quote` call, documented here: `https://iexcloud.io/docs/api/#quote`. `IEX Cloud` attribute names can be verbose, so you can set aliases for them as well.
 

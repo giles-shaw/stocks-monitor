@@ -1,8 +1,8 @@
 # stocks-monitor
-A command line utility for viewing real time stock ticker information provided by the IEX Cloud Stocks API.
+A command line utility for viewing real time stock ticker information provided by the IEX Cloud Stocks API: https://iexcloud.io/.
 
 ## Authentication
-`stocks-monitor` requires a free account with `IEX Cloud: https://iexcloud.io/` and its associated publishable API key. Create a folder named `.stocks-monitor` in your home folder and put a file `credentials.toml` containing your `IEX Cloud` publishable API token there. An example `credentials.toml` file can be found in the `templates` folder.
+`stocks-monitor` requires a free account with IEX Cloud and its associated publishable API key. Create a folder named `.stocks-monitor` in your home folder and put a file `credentials.toml` containing your `IEX Cloud` publishable API token there. An example `credentials.toml` file can be found in the `templates` folder.
 
 ## Usage
 Once your `credentials.toml` file is in place, simply run, for instance, 
@@ -13,9 +13,9 @@ to display up to date stock information. If the markets are closed, use
 ```
 stocks-monitor -t -s AAPL MSFT
 ```
-in order to run `stocks-monitor` in testing mode with fake simulated based data on closing prices.
+in order to run `stocks-monitor` in testing mode with simulated data based on closing prices.
 
-`stocks-monitor` can sort the information it presents to you according to any of the columns displayed. Simply press the index key of the corresponding column (i.e., press `1` to sort by the first column, `2` to sort by the first column...). `stocks-monitor` will sort numeric columns in descending order and tect based columns in ascending order. Attempting to sort an already sorted column will reverse the sort order.
+`stocks-monitor` can sort the information it presents to you according to any of the columns displayed. Simply press the index key of the corresponding column (i.e., press `1` to sort by the first column, `2` to sort by the first column...). `stocks-monitor` will sort numeric columns in descending order and text based columns in ascending order. Attempting to sort an already sorted column will reverse the sort order.
 
 ## Configuration
 

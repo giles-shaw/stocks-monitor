@@ -29,7 +29,8 @@ Additionally, `config.toml` allows for `stocks-monitor` to be configured to disp
 ## Installation
 
 ```
-mkdir stocks-monitor && cd stocks-monitor && git pull "https://github.com/giles-shaw/stocks-monitor" && python setup.py install
+mkdir stocks-monitor && cd stocks-monitor 
+git pull "https://github.com/giles-shaw/stocks-monitor" && python setup.py install
 ``` 
 As usual, it is recommended that you do this inside of a virtual environment.
 

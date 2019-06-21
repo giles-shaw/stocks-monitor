@@ -29,10 +29,6 @@ ALIASES = dict(
 FIELDS = {**dict([(f, f) for f in IEX_KEYS]), **ALIASES}
 
 
-class SymbolNotFoundError(Exception):
-    pass
-
-
 def cli() -> None:
 
     parser = argparse.ArgumentParser(

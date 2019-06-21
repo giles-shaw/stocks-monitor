@@ -1,0 +1,10 @@
+symbols = ['AAPL', 'AMZN', 'GOOG', 'MSFT', 'TSLA']
+
+[fields] 
+"symbol" = "symbol"
+"latestPrice" = "current"
+"open" = "open"
+"close" = "close"
+"peRatio" = "p/e"
+"changePercent" = "% change"
+"marketCap" = "mktCap"

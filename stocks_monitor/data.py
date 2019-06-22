@@ -15,8 +15,8 @@ def data_feed(
     query_wait_time: float = 5,
 ) -> Iterator[pd.DataFrame]:
 
-    while True:
-        with requests.Session() as s:
+    with requests.Session() as s:
+        while True:
             response = s.get(
                 IEX_BATCH_URL,
                 params={

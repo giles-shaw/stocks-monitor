@@ -39,4 +39,3 @@ def format_number(e: Union[int, float]) -> str:
             return fmt(e, thresh) + abrv
     else:
         return fmt(e, 1)
-    raise ValueError

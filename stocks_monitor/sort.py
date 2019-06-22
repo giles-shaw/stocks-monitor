@@ -1,3 +1,6 @@
+"""
+Sorting logic for stocks_monitor UI.
+"""
 from enum import Enum
 from queue import Queue
 from typing import Iterable

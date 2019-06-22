@@ -15,6 +15,7 @@ class DataFrameWidget(urwid.Filler):
     def __init__(self, data: pd.DataFrame = pd.DataFrame([])) -> None:
         original_widget = urwid.Columns([], dividechars=3)
         super().__init__(original_widget, "top")
+        self.update_columns(data)
 
     def update_columns(self, data: pd.DataFrame) -> None:
 

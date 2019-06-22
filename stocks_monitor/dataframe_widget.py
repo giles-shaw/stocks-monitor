@@ -1,6 +1,6 @@
 """
-View a pd.DataFrame whose values are numbers or strings using an urwid widget
-with the ability to sort rows according to user input.
+Wrapper for urwid.Filler designed to display information from a DataFrame
+and pass on user input to a queue for processing.
 """
 from queue import Queue
 from typing import Any, Callable

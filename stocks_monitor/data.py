@@ -1,3 +1,6 @@
+"""
+Generators to query IEX Cloud API for data.
+"""
 from typing import Dict, List, Iterator
 
 import numpy as np

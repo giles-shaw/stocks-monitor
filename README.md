@@ -19,17 +19,24 @@ to run `stocks-monitor` in testing mode with simulated data based on the last tr
 
 `stocks-monitor` can sort the information it presents to you according to any of the columns displayed. Simply press the index key of the corresponding column (i.e., press `1` to sort by the first column, `2` to sort by the first column). `stocks-monitor` will sort numeric columns in descending order and text based columns in ascending order. Attempting to sort an already sorted column will reverse the sort order.
 
+
+## IEX Cloud API Limits
+IEX Cloud limit the number of monthly requests that users can make to their API for free. Users are allocated a fixed number of [IEX Cloud Messages](https://iexcloud.io/docs/api/#data-weighting) at the start of each month and different requests to the IEX Cloud API consume different numbers of IEX Cloud Messages. Note that `stocks-monitor` will consume some of these on your behalf continuously at a certain rate when run without the `-t` testing option, and that a fixed number of messages are consumed when fetching information from the previous trading day whenever `stocks-monitor` is run with the `-t` option.
+
+
 ## Configuration
+Some aspects of `stocks-monitor`'s behaviour can be configured by placing a `config.toml` file following the schema provided in `templates` in your `.stocks-monitor` folder:
 
-`stocks-monitor` can be configured to run with a default set of stock ticker symbols. To do this, create a `config.toml` file following the schema provided in `templates` and place this in your `.stocks-monitor` folder. Running `stocks-monitor` or `stocks-monitor -t` without additional arguments will now refer to your default list of ticker symbols from here on after.
+* You can define a default list of stock ticker symbols for `stocks-monitor` to use in the absence of other arguments. Once such a list is defined, running `stocks-monitor` or `stocks-monitor -t` without additional arguments will now display information for your default list of ticker symbols from here on after.
 
-Additionally, `config.toml` allows for `stocks-monitor` to be configured to display any stock attributes which are accessible via the [IEX Cloud quote call](https://iexcloud.io/docs/api/#quote). IEX Cloud attribute names can be verbose, so you can set aliases for them as well.
+* `stocks-monitor` can be configured to display any stock attributes which are accessible via the [IEX Cloud quote call](https://iexcloud.io/docs/api/#quote). IEX Cloud attribute names can be verbose, so you can set aliases for them as well.
+
+* You can configure how long `stocks-monitor` waits between sending requests to the IEX Cloud API. Beware that setting a lower request wait time will result in `stocks-monitor` consuming IEX Cloud `messages` on your behalf at a faster rate. 
 
 ## Requirements
 `stocks-monitor` requires `Python 3.7` or higher, and the libraries `urwid`, `numpy`, `pandas`, `toml`, and `requests`. `stocks-monitor` has been tested using `zsh` and `bash` on `macOS Mojave`.
 
 ## Installation
-
 ```
 mkdir stocks-monitor && cd stocks-monitor 
 git pull "https://github.com/giles-shaw/stocks-monitor" && python setup.py install

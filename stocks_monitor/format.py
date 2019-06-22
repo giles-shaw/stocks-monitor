@@ -1,3 +1,7 @@
+"""
+Helper formatting functions to convert pd.DataFrame values to displayable text
+characters.
+"""
 from collections import OrderedDict
 from typing import Any, Union, List
 

@@ -3,13 +3,16 @@ CLI for stocks_monitor.
 """
 import argparse
 from pathlib import Path
-from typing import List, Dict, Iterator, Callable
+from typing import Callable, Iterator
 
 import pandas as pd
 import toml
 
 from stocks_monitor.data import data_feed, fake_data_feed
 from stocks_monitor.main import monitor
+
+CONFIG_PATH = Path.home() / Path(".stocks-monitor/config.toml")
+TOKEN_PATH = Path.home() / Path(".stocks-monitor/credentials.toml")
 
 IEX_KEYS = [
     "symbol",
@@ -39,6 +42,7 @@ def cli() -> None:
         "--symbols",
         nargs="+",
         type=str,
+        default=tuple(),
         help="stock ticker symbols to display",
     )
     parser.add_argument(
@@ -50,41 +54,17 @@ def cli() -> None:
     )
     args = parser.parse_args()
 
-    config_path = Path.home() / Path(".stocks-monitor/config.toml")
-    token_path = Path.home() / Path(".stocks-monitor/credentials.toml")
-    symbols, fields, token = (
-        get_symbols(args.symbols, config_path),
-        get_fields(config_path),
-        get_token(token_path),
-    )
+    kwargs = {"symbols": args.symbols, "fields": FIELDS}
+    if CONFIG_PATH.is_file():
+        with open(CONFIG_PATH, "r") as f:
+            kwargs = {**kwargs, **toml.load(f)}
+    with open(TOKEN_PATH, "r") as f:
+        kwargs["token"] = toml.load(f)["iex_publishable_token"]
 
     stocks_feed: Callable[
-        [List[str], Dict[str, str], str], Iterator[pd.DataFrame]
+        ..., Iterator[pd.DataFrame]
     ] = fake_data_feed if args.test else data_feed
-    monitor(stocks_feed(symbols, fields, token))
-
-
-def get_symbols(args: List[str], path: Path) -> List[str]:
-
-    if args:
-        return args
-    with open(path, "r") as f:
-        return toml.load(f)["symbols"]
-
-
-def get_fields(path: Path) -> Dict[str, str]:
-
-    try:
-        with open(path, "r") as f:
-            return toml.load(f)["fields"]
-    except (FileNotFoundError, IsADirectoryError, KeyError):
-        return FIELDS
-
-
-def get_token(path: Path) -> str:
-
-    with open(path, "r") as f:
-        return toml.load(f)["iex_publishable_token"]
+    monitor(stocks_feed(**kwargs))
 
 
 if __name__ == "__main__":

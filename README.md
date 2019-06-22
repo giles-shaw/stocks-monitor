@@ -2,7 +2,7 @@
 A command line utility for viewing real time stock ticker information provided by the [IEX Cloud Stocks API](https://iexcloud.io/).
 
 ## Authentication
-`stocks-monitor` requires a free account with IEX Cloud and its associated [publishable API key](https://iexcloud.io/docs/api/#authentication). Create a folder named `.stocks-monitor` in your home folder and put a file `credentials.toml` there containing a line of the form `iex_publishable_token = "your_api_token_here"`. An example `credentials.toml` file can be found in the `templates` folder.
+`stocks-monitor` requires a free account with IEX Cloud and an associated [publishable API key](https://iexcloud.io/docs/api/#authentication). Create a folder named `.stocks-monitor` in your home folder and put a file `credentials.toml` there containing a line of the form `iex_publishable_token = "your_api_token_here"`. An example `credentials.toml` file can be found in the `templates` folder.
 
 ## Usage
 Once your `credentials.toml` file is in place, simply run, for instance, 

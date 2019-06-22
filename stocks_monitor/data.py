@@ -9,7 +9,10 @@ IEX_BATCH_URL = "https://cloud.iexapis.com/stable/stock/market/batch"
 
 
 def data_feed(
-    symbols: List[str], fields: Dict[str, str], token: str, wait: float = 1
+    symbols: List[str],
+    fields: Dict[str, str],
+    token: str,
+    query_wait_time: float = 5,
 ) -> Iterator[pd.DataFrame]:
 
     while True:
@@ -34,11 +37,14 @@ def data_feed(
             yield pd.DataFrame.from_dict(flattened, orient="index")[
                 list(fields)
             ].rename(fields, axis="columns")
-            sleep(wait)
+            sleep(query_wait_time)
 
 
 def fake_data_feed(
-    symbols: List[str], fields: Dict[str, str], token: str, wait: float = 1
+    symbols: List[str],
+    fields: Dict[str, str],
+    token: str,
+    query_wait_time: float = 5,
 ) -> Iterator[pd.DataFrame]:
 
     df = next(data_feed(symbols, fields, token))
@@ -50,4 +56,4 @@ def fake_data_feed(
             )
 
         yield df
-        sleep(wait)
+        sleep(query_wait_time)

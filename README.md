@@ -17,7 +17,7 @@ stocks-monitor -t -s AAPL MSFT
 ```
 to run `stocks-monitor` in testing mode with simulated data based on the last trading day.
 
-`stocks-monitor` can sort the information it presents to you according to any of the columns displayed. Simply press the index key of the corresponding column (i.e., press `1` to sort by the first column, `2` to sort by the first column). `stocks-monitor` will sort numeric columns in descending order and text based columns in ascending order. Attempting to sort an already sorted column will reverse the sort order.
+`stocks-monitor` can sort the information it presents to you according to any of the columns displayed. Simply press the index key of the corresponding column (i.e., press `1` to sort by the first column, `2` to sort by the second column). `stocks-monitor` will sort numeric columns in descending order and text based columns in ascending order. Attempting to sort an already sorted column will reverse the sort order.
 
 
 ## IEX Cloud API Limits

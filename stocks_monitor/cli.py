@@ -3,7 +3,7 @@ CLI for stocks_monitor.
 """
 import argparse
 from pathlib import Path
-from typing import Callable, Iterator
+from typing import Any, Callable, Dict, Iterator
 
 import pandas as pd
 import toml
@@ -54,10 +54,12 @@ def cli() -> None:
     )
     args = parser.parse_args()
 
-    kwargs = {"symbols": args.symbols, "fields": FIELDS}
+    kwargs: Dict[str, Any] = {"fields": FIELDS}
     if CONFIG_PATH.is_file():
         with open(CONFIG_PATH, "r") as f:
             kwargs = {**kwargs, **toml.load(f)}
+    if args.symbols:
+        kwargs["symbols"] = args.symbols
     with open(TOKEN_PATH, "r") as f:
         kwargs["token"] = toml.load(f)["iex_publishable_token"]
 

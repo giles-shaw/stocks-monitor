@@ -5,7 +5,7 @@ from typing import Iterable
 import pandas as pd
 
 
-def sort(queue: Queue) -> Iterable[pd.DataFrame]:
+def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
 
     arrival, sort_key = None, 0
     while not isinstance(arrival, pd.DataFrame):

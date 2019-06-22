@@ -9,7 +9,7 @@ import pandas as pd
 import urwid
 
 from stocks_monitor.dataframe_widget import DataFrameWidget
-from stocks_monitor.sort import sort
+from stocks_monitor.sort import sort_data
 
 
 def monitor(data_feed: Iterable[pd.DataFrame]) -> None:
@@ -37,7 +37,7 @@ def gui(queue: Queue) -> None:
         unhandled_input=dataframe_widget.handle_input(queue),
     )
 
-    sorted_data = sort(queue)
+    sorted_data = sort_data(queue)
     Thread(target=update_loop(sorted_data, loop), daemon=True).start()
     loop.run()
 

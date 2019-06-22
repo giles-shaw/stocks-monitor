@@ -1,5 +1,7 @@
 symbols = ['AAPL', 'AMZN', 'GOOG', 'MSFT', 'TSLA']
 
+query_wait_time = 5
+
 [fields] 
 "symbol" = "symbol"
 "latestPrice" = "current"

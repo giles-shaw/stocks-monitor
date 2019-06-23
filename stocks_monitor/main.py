@@ -3,7 +3,7 @@ Main control flow for stocks_monitor.
 """
 from queue import Queue
 from threading import Thread
-from typing import Callable, Iterable
+from typing import Iterable
 
 import pandas as pd
 import urwid
@@ -38,17 +38,13 @@ def gui(queue: Queue) -> None:
     )
 
     sorted_data = sort_data(queue)
-    Thread(target=update_loop(sorted_data, loop), daemon=True).start()
+    Thread(target=update_loop, args=(sorted_data, loop), daemon=True).start()
     loop.run()
 
 
 def update_loop(
     sorted_data: Iterable[pd.DataFrame], loop: urwid.MainLoop
-) -> Callable[[], None]:
-    def fn() -> None:
-
-        for data in sorted_data:
-            loop.widget.update_columns(data)
-            loop.draw_screen()
-
-    return fn
+) -> None:
+    for data in sorted_data:
+        loop.widget.update_columns(data)
+        loop.draw_screen()

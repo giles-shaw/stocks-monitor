@@ -2,21 +2,19 @@
 Sorting logic for stocks_monitor UI.
 """
 from queue import Queue
-from typing import Iterable, Union
+from typing import Generator, Iterable, Tuple
 
 import pandas as pd
 
 
 def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
 
-    dataframe, sort_director, sort_key = None, SortDirector(), 0
+    dataframe, sort_key = None, 0
     while not isinstance(dataframe, pd.DataFrame):
         dataframe = queue.get()
 
-    direction = sort_director.new_sort_direction(
-        sort_key, dataframe.iloc[:, sort_key].dtype
-    )
-    sort_director.update_history(sort_key, direction)
+    sort_direction = new_sort_direction(sort_key, dataframe.dtypes[sort_key])
+    direction = next(sort_direction)
     yield sort_and_update_names(dataframe, direction, sort_key)
 
     while True:
@@ -24,29 +22,22 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
         if isinstance(arrival, pd.DataFrame):
             dataframe = arrival
         else:
-            sort_key = arrival
-            direction = sort_director.new_sort_direction(
-                sort_key, dataframe.iloc[:, sort_key].dtype
-            )
-            sort_director.update_history(sort_key, direction)
+            sort_key, dtype = arrival, dataframe.dtypes[arrival]
+            direction = sort_direction.send((sort_key, dtype))
         yield sort_and_update_names(dataframe, direction, sort_key)
 
 
-class SortDirector:
-    def __init__(self):
-        self.previous_sort_key: int = None
-        self.previous_sort_direction: Union[bool, None] = None
+def new_sort_direction(
+    sort_key, dtype
+) -> Generator[bool, Tuple[int, str], None]:
 
-    def update_history(self, sort_key: int, direction: bool) -> None:
-        self.previous_sort_key = sort_key
-        self.previous_sort_direction = direction
-
-    def new_sort_direction(self, sort_key, dtype) -> bool:
-
-        if self.previous_sort_key == sort_key:
-            return not self.previous_sort_direction
+    previous_key, direction = None, default_sort_direction(dtype)
+    while True:
+        (key, dtype) = yield direction
+        if previous_key != key:
+            previous_key, direction = key, default_sort_direction(dtype)
         else:
-            return default_sort_direction(dtype)
+            direction = not direction
 
 
 def sort_and_update_names(

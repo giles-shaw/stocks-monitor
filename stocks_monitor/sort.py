@@ -31,7 +31,7 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
 
 def sort_direction(sort_key, dtype) -> Generator[bool, Tuple[int, str], None]:
 
-    previous_key, direction = None, default_sort_direction(dtype)
+    previous_key, direction = sort_key, default_sort_direction(dtype)
     while True:
         (key, dtype) = yield direction
         if previous_key != key:

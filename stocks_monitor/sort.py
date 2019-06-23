@@ -11,7 +11,7 @@ from stocks_monitor.format import add_arrow
 
 def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
 
-    candidate = None
+    candidate = queue.get()
     while not isinstance(candidate, pd.DataFrame):
         candidate = queue.get()
     dataframe = candidate

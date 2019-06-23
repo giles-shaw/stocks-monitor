@@ -27,7 +27,7 @@ class DataFrameWidget(urwid.Filler):
         def fn(key: Any) -> bool:
             if key in ("q", "Q"):
                 raise urwid.ExitMainLoop()
-            # Ensure that input is a valid sort key.
+            # Ensure input is a valid sort key.
             try:
                 assert int(key) - 1 in range(
                     len(self.original_widget.contents)

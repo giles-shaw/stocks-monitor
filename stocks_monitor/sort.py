@@ -11,10 +11,11 @@ from stocks_monitor.format import add_arrow
 
 def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
 
-    dataframe, sort_key = None, 0
-    while not isinstance(dataframe, pd.DataFrame):
-        dataframe = queue.get()
+    arrival, sort_key = queue.get(), 0
+    while not isinstance(arrival, pd.DataFrame):
+        arrival = queue.get()
 
+    dataframe = arrival
     new_sort_direction = sort_direction(sort_key, dataframe.dtypes[sort_key])
     direction = next(new_sort_direction)
     yield processed_dataframe(dataframe, direction, sort_key)

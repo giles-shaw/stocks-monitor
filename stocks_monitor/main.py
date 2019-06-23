@@ -37,7 +37,7 @@ def gui(queue: Queue) -> None:
         unhandled_input=dataframe_widget.handle_input(queue),
     )
 
-    sorted_data = sort_data(queue)
+    sorted_data: Iterable[pd.DataFrame] = sort_data(queue)
     Thread(target=update_loop, args=(sorted_data, loop), daemon=True).start()
     loop.run()
 

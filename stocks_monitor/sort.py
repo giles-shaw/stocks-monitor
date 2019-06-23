@@ -1,74 +1,70 @@
 """
 Sorting logic for stocks_monitor UI.
 """
-from enum import Enum
 from queue import Queue
-from typing import Iterable
+from typing import Iterable, Union
 
 import pandas as pd
 
 
 def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
 
-    arrival, sort_key = None, 0
-    while not isinstance(arrival, pd.DataFrame):
-        arrival = queue.get()
+    dataframe, sort_director, sort_key = None, SortDirector(), 0
+    while not isinstance(dataframe, pd.DataFrame):
+        dataframe = queue.get()
 
-    direction = sort_direction(
-        arrival.iloc[:, sort_key], False, SortStatus.unsorted
+    direction = sort_director.new_sort_direction(
+        sort_key, dataframe.iloc[:, sort_key].dtype
     )
-    sorted_data = arrival.sort_values(
-        by=arrival.columns[sort_key], ascending=direction
-    )
-    yield sorted_data
+    sort_director.update_history(sort_key, direction)
+    yield sort_and_update_names(dataframe, direction, sort_key)
 
     while True:
         arrival = queue.get()
         if isinstance(arrival, pd.DataFrame):
-            sorted_data = arrival.sort_values(
-                by=arrival.columns[sort_key], ascending=direction
-            )
+            dataframe = arrival
         else:
             sort_key = arrival
-            sort_status = column_sort_status(sorted_data.iloc[:, sort_key])
-            direction = sort_direction(
-                sorted_data.iloc[:, sort_key], True, sort_status
+            direction = sort_director.new_sort_direction(
+                sort_key, dataframe.iloc[:, sort_key].dtype
             )
-            sorted_data = sorted_data.sort_values(
-                by=sorted_data.columns[sort_key], ascending=direction
-            )
-        yield sorted_data
+            sort_director.update_history(sort_key, direction)
+        yield sort_and_update_names(dataframe, direction, sort_key)
 
 
-SortStatus = Enum("SortStatus", ["unsorted", "ascending", "descending"])
+class SortDirector:
+    def __init__(self):
+        self.previous_sort_key: int = None
+        self.previous_sort_direction: Union[bool, None] = None
 
+    def update_history(self, sort_key: int, direction: bool) -> None:
+        self.previous_sort_key = sort_key
+        self.previous_sort_direction = direction
 
-def sort_direction(
-    series: pd.Series, acting_on_input: bool, sort_status: SortStatus
-) -> bool:
+    def new_sort_direction(self, sort_key, dtype) -> bool:
 
-    if sort_status == SortStatus.unsorted:
-        return True if series.dtype == "object" else False
-    else:
-        # If the column is already sorted and the user has acted, reverse the
-        # sorting direction. Otherwise, maintain it.
-        if acting_on_input:
-            if sort_status == SortStatus.ascending:
-                return False
-            return True
+        if self.previous_sort_key == sort_key:
+            return not self.previous_sort_direction
         else:
-            if sort_status == SortStatus.ascending:
-                return True
-            return False
+            return default_sort_direction(dtype)
 
 
-def column_sort_status(series: pd.Series) -> SortStatus:
+def sort_and_update_names(
+    df: pd.DataFrame, direction: bool, sort_key: int
+) -> pd.DataFrame:
+    name = df.columns[sort_key]
 
-    consecutive_pairs = list(zip(series[:-1], series[1:]))
+    return df.sort_values(by=name, ascending=direction).rename(
+        mapper={name: add_arrow(name, direction)}, axis="columns"
+    )
 
-    if all(a <= b for a, b in consecutive_pairs):
-        return SortStatus.ascending
-    elif all(a >= b for a, b in consecutive_pairs):
-        return SortStatus.descending
-    else:
-        return SortStatus.unsorted
+
+def default_sort_direction(dtype: str) -> bool:
+    return True if dtype == "object" else False
+
+
+def add_arrow(name: str, direction: bool) -> str:
+
+    if direction is True:
+        return name + " ⬇"
+    return name + " ⬆"

@@ -39,3 +39,10 @@ def format_number(e: Union[int, float]) -> str:
             return fmt(e, thresh) + abrv
     else:
         return fmt(e, 1)
+
+
+def add_arrow(name: str, direction: bool) -> str:
+
+    if direction is True:
+        return name + " ⬇"
+    return name + " ⬆"

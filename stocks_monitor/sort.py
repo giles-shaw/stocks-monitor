@@ -6,6 +6,8 @@ from typing import Generator, Iterable, Tuple
 
 import pandas as pd
 
+from stocks_monitor.format import add_arrow
+
 
 def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
 
@@ -13,9 +15,9 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
     while not isinstance(dataframe, pd.DataFrame):
         dataframe = queue.get()
 
-    sort_direction = new_sort_direction(sort_key, dataframe.dtypes[sort_key])
-    direction = next(sort_direction)
-    yield sort_and_update_names(dataframe, direction, sort_key)
+    new_sort_direction = sort_direction(sort_key, dataframe.dtypes[sort_key])
+    direction = next(new_sort_direction)
+    yield processed_dataframe(dataframe, direction, sort_key)
 
     while True:
         arrival = queue.get()
@@ -23,13 +25,11 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
             dataframe = arrival
         else:
             sort_key, dtype = arrival, dataframe.dtypes[arrival]
-            direction = sort_direction.send((sort_key, dtype))
-        yield sort_and_update_names(dataframe, direction, sort_key)
+            direction = new_sort_direction.send((sort_key, dtype))
+        yield processed_dataframe(dataframe, direction, sort_key)
 
 
-def new_sort_direction(
-    sort_key, dtype
-) -> Generator[bool, Tuple[int, str], None]:
+def sort_direction(sort_key, dtype) -> Generator[bool, Tuple[int, str], None]:
 
     previous_key, direction = None, default_sort_direction(dtype)
     while True:
@@ -40,7 +40,7 @@ def new_sort_direction(
             direction = not direction
 
 
-def sort_and_update_names(
+def processed_dataframe(
     df: pd.DataFrame, direction: bool, sort_key: int
 ) -> pd.DataFrame:
     name = df.columns[sort_key]
@@ -52,10 +52,3 @@ def sort_and_update_names(
 
 def default_sort_direction(dtype: str) -> bool:
     return True if dtype == "object" else False
-
-
-def add_arrow(name: str, direction: bool) -> str:
-
-    if direction is True:
-        return name + " ⬇"
-    return name + " ⬆"

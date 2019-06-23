@@ -11,42 +11,42 @@ from stocks_monitor.format import add_arrow
 
 def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
 
-    arrival, sort_key = queue.get(), 0
-    while not isinstance(arrival, pd.DataFrame):
-        arrival = queue.get()
+    candidate = None
+    while not isinstance(candidate, pd.DataFrame):
+        candidate = queue.get()
+    dataframe = candidate
 
-    dataframe = arrival
-    new_sort_direction = sort_direction(sort_key, dataframe.dtypes[sort_key])
-    direction = next(new_sort_direction)
-    yield processed_dataframe(dataframe, direction, sort_key)
+    arrival, new_sort_direction = 0, sort_direction()
+    next(new_sort_direction)
 
     while True:
-        arrival = queue.get()
         if isinstance(arrival, pd.DataFrame):
             dataframe = arrival
         else:
             sort_key, dtype = arrival, dataframe.dtypes[arrival]
             direction = new_sort_direction.send((sort_key, dtype))
         yield processed_dataframe(dataframe, direction, sort_key)
+        arrival = queue.get()
 
 
-def sort_direction(sort_key, dtype) -> Generator[bool, Tuple[int, str], None]:
+def sort_direction() -> Generator[bool, Tuple[int, str], None]:
 
-    previous_key, direction = sort_key, default_sort_direction(dtype)
+    previous_key = None
+    (key, dtype) = yield False
     while True:
-        (key, dtype) = yield direction
         if previous_key != key:
             previous_key, direction = key, default_sort_direction(dtype)
         else:
             direction = not direction
+        (key, dtype) = yield direction
 
 
 def processed_dataframe(
-    df: pd.DataFrame, direction: bool, sort_key: int
+    dataframe: pd.DataFrame, direction: bool, sort_key: int
 ) -> pd.DataFrame:
-    name = df.columns[sort_key]
+    name = dataframe.columns[sort_key]
 
-    return df.sort_values(by=name, ascending=direction).rename(
+    return dataframe.sort_values(by=name, ascending=direction).rename(
         mapper={name: add_arrow(name, direction)}, axis="columns"
     )
 

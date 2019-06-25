@@ -42,11 +42,7 @@ ALIASES = dict(
 FIELDS = {**dict([(f, f) for f in IEX_KEYS]), **ALIASES}
 
 
-def cli() -> None:
-
-    parser = argparse.ArgumentParser(
-        description="display real time market information for stocks"
-    )
+def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument(
         "-s",
         "--symbols",
@@ -62,6 +58,18 @@ def cli() -> None:
         default=False,
         help="use fake updates to test functionality when markets are closed",
     )
+
+    return parser
+
+
+def cli() -> None:
+
+    parser = add_arguments(
+        argparse.ArgumentParser(
+            description="display real time market information for stocks"
+        )
+    )
+
     args = parser.parse_args()
 
     kwargs: Dict[str, Any] = {"fields": FIELDS}

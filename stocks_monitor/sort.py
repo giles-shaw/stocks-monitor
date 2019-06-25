@@ -1,6 +1,7 @@
 """
 Sorting logic for stocks_monitor UI.
 """
+from numbers import Number
 from queue import Queue
 from typing import Generator, Iterable, Tuple
 
@@ -23,22 +24,25 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
         if isinstance(arrival, pd.DataFrame):
             dataframe = arrival
         else:
-            sort_key, dtype = arrival, dataframe.dtypes[arrival]
-            direction = new_sort_direction.send((sort_key, dtype))
+            sort_key = arrival
+            is_numeric = all(
+                isinstance(v, Number) for v in set(dataframe.iloc[:, sort_key])
+            )
+            direction = new_sort_direction.send((sort_key, is_numeric))
         yield processed_dataframe(dataframe, direction, sort_key)
         arrival = queue.get()
 
 
-def sort_direction() -> Generator[bool, Tuple[int, str], None]:
+def sort_direction() -> Generator[bool, Tuple[int, bool], None]:
 
     previous_key = None
-    (key, dtype) = yield False
+    (key, is_numeric) = yield False
     while True:
         if previous_key != key:
-            previous_key, direction = key, default_sort_direction(dtype)
+            previous_key, direction = key, not is_numeric
         else:
             direction = not direction
-        (key, dtype) = yield direction
+        (key, is_numeric) = yield direction
 
 
 def processed_dataframe(
@@ -49,7 +53,3 @@ def processed_dataframe(
     return dataframe.sort_values(by=name, ascending=direction).rename(
         mapper={name: add_arrow(name, direction)}, axis="columns"
     )
-
-
-def default_sort_direction(dtype: str) -> bool:
-    return True if dtype == "object" else False

@@ -25,7 +25,7 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
             dataframe = arrival
         else:
             sort_key = arrival
-            is_numeric = numeric(dataframe.loc[:, sort_key])
+            is_numeric = numeric(dataframe.iloc[:, sort_key])
             direction = new_sort_direction.send((sort_key, is_numeric))
         yield processed_dataframe(dataframe, direction, sort_key)
         arrival = queue.get()
@@ -55,4 +55,4 @@ def processed_dataframe(
 
 def numeric(series: pd.Series) -> bool:
 
-    return all(isinstance(v, Number) for v in set(series))
+    return all(isinstance(v, Number) for v in set(series.values))

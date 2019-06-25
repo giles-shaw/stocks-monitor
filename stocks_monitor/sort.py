@@ -17,7 +17,7 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
         candidate = queue.get()
     dataframe = candidate
 
-    arrival, new_sort_direction = 0, sort_direction()
+    arrival, new_sort_direction = -1, sort_direction()
     next(new_sort_direction)
 
     while True:
@@ -48,9 +48,12 @@ def processed_dataframe(
 ) -> pd.DataFrame:
     name = dataframe.columns[sort_key]
 
-    return dataframe.sort_values(by=name, ascending=direction).rename(
-        mapper={name: add_arrow(name, direction)}, axis="columns"
-    )
+    if sort_key == -1:
+        return dataframe
+    else:
+        return dataframe.sort_values(by=name, ascending=direction).rename(
+            mapper={name: add_arrow(name, direction)}, axis="columns"
+        )
 
 
 def numeric(series: pd.Series) -> bool:

@@ -29,8 +29,9 @@ class DataFrameWidget(urwid.Filler):
                 raise urwid.ExitMainLoop()
             # Ensure input is a valid sort key.
             try:
-                assert int(key) - 1 in range(
-                    len(self.original_widget.contents)
+                assert (
+                    int(key) - 1 in range(len(self.original_widget.contents))
+                    or int(key) == 0
                 )
             except (ValueError, TypeError):
                 return False

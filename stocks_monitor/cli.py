@@ -2,6 +2,7 @@
 CLI for stocks_monitor.
 """
 import argparse
+import os
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterator
 
@@ -11,8 +12,17 @@ import toml
 from stocks_monitor.data import data_feed, fake_data_feed
 from stocks_monitor.main import monitor
 
-CONFIG_PATH = Path.home() / Path(".stocks-monitor/config.toml")
-TOKEN_PATH = Path.home() / Path(".stocks-monitor/credentials.toml")
+XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME")
+SM_CONFIG, SM_CREDENTIALS = (
+    Path("stocks-monitor/config.toml"),
+    Path("stocks-monitor/credentials.toml"),
+)
+if XDG_CONFIG_HOME:
+    CONFIG_PATH = Path(XDG_CONFIG_HOME) / SM_CONFIG
+    CREDENTIALS_PATH = Path(XDG_CONFIG_HOME) / SM_CREDENTIALS
+else:
+    CONFIG_PATH = Path.home() / Path(".config") / SM_CONFIG
+    CREDENTIALS_PATH = Path.home() / Path(".config") / SM_CREDENTIALS
 
 IEX_KEYS = [
     "symbol",
@@ -58,9 +68,11 @@ def cli() -> None:
     if CONFIG_PATH.is_file():
         with open(CONFIG_PATH, "r") as f:
             kwargs = {**kwargs, **toml.load(f)}
+
     if args.symbols:
         kwargs["symbols"] = args.symbols
-    with open(TOKEN_PATH, "r") as f:
+
+    with open(CREDENTIALS_PATH, "r") as f:
         kwargs["token"] = toml.load(f)["iex_publishable_token"]
 
     stocks_feed: Callable[

@@ -13,10 +13,9 @@ from stocks_monitor.data import data_feed, fake_data_feed
 from stocks_monitor.main import monitor
 
 XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME")
-SM_CONFIG, SM_CREDENTIALS = (
-    Path("stocks-monitor/config.toml"),
-    Path("stocks-monitor/credentials.toml"),
-)
+SM_CONFIG = Path("stocks-monitor/config.toml")
+SM_CREDENTIALS = Path("stocks-monitor/credentials.toml")
+
 if XDG_CONFIG_HOME:
     CONFIG_PATH = Path(XDG_CONFIG_HOME) / SM_CONFIG
     CREDENTIALS_PATH = Path(XDG_CONFIG_HOME) / SM_CREDENTIALS

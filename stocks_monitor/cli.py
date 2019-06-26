@@ -82,9 +82,7 @@ def cli() -> None:
     with open(CREDENTIALS_PATH, "r") as f:
         kwargs["token"] = toml.load(f)["iex_publishable_token"]
 
-    stocks_feed: Callable[
-        ..., Iterator[pd.DataFrame]
-    ] = fake_data_feed if args.test else data_feed
+    stocks_feed = fake_data_feed if args.test else data_feed  # type: ignore
     monitor(stocks_feed(**kwargs))
 
 

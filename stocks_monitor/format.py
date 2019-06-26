@@ -13,7 +13,11 @@ def format_df(df: pd.DataFrame) -> List[urwid.Text]:
 
     df_str = df.applymap(format_entry)
     text_cols = [
-        [("bold", format_name(c))] + df_str[c].to_list() for c in df_str
+        [("bold", format_name(list(df_str)[0], left_align=True))]
+        + df_str[list(df_str)[0]].to_list()
+    ] + [
+        [("bold", format_name(c))] + df_str[c].to_list()
+        for c in list(df_str)[1:]
     ]
 
     return [urwid.Text(text_cols[0], align="left")] + [
@@ -43,17 +47,21 @@ def format_number(e: Union[int, float]) -> str:
         return fmt(e, 1)
 
 
-def add_arrow(name: str, direction: bool) -> str:
-
+def add_arrow(name: str, direction: bool, left_align: bool = False) -> str:
+    if left_align:
+        return add_arrow(name[::-1], direction)[::-1]
     if direction is True:
-        return "⬇ " + name
-    return "⬆ " + name
+        return "▼ " + name
+    return "▲ " + name
 
 
-def format_name(name: str) -> str:
+def format_name(name: str, left_align: bool = False) -> str:
+
+    if left_align:
+        return format_name(name[::-1])[::-1]
 
     try:
-        if name[:2] == "⬆ " or name[:2] == "⬇ ":
+        if name[:2] == "▲ " or name[:2] == "▼ ":
             return name
         else:
             return "  " + name

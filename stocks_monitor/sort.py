@@ -50,6 +50,11 @@ def processed_dataframe(
 
     if sort_key == -1:
         return dataframe
+    elif sort_key == 0:
+        return dataframe.sort_values(by=name, ascending=direction).rename(
+            mapper={name: add_arrow(name, direction, left_align=True)},
+            axis="columns",
+        )
     else:
         return dataframe.sort_values(by=name, ascending=direction).rename(
             mapper={name: add_arrow(name, direction)}, axis="columns"

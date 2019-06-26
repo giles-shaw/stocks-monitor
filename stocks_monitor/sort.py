@@ -25,8 +25,8 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
             dataframe = arrival
         else:
             sort_key = arrival
-            is_numeric = numeric(dataframe.iloc[:, sort_key])
-            direction = new_sort_direction.send((sort_key, is_numeric))
+            numeric_col = numeric(dataframe.iloc[:, sort_key])
+            direction = new_sort_direction.send((sort_key, numeric_col))
         yield processed_dataframe(dataframe, direction, sort_key)
         arrival = queue.get()
 
@@ -34,13 +34,14 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
 def sort_direction() -> Generator[bool, Tuple[int, bool], None]:
 
     previous_key = None
-    (key, is_numeric) = yield False
+    (key, numeric_col) = yield False
     while True:
         if previous_key != key:
-            previous_key, direction = key, not is_numeric
+            # Sort numeric columns in descending order by default.
+            previous_key, direction = key, not numeric_col
         else:
             direction = not direction
-        (key, is_numeric) = yield direction
+        (key, numeric_col) = yield direction
 
 
 def processed_dataframe(

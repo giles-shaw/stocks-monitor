@@ -8,7 +8,7 @@ from typing import Any, Callable
 import pandas as pd
 import urwid
 
-from stocks_monitor.format import format_df
+from stocks_monitor.format import format_dataframe
 
 
 class DataFrameWidget(urwid.Filler):
@@ -20,7 +20,8 @@ class DataFrameWidget(urwid.Filler):
     def update_columns(self, data: pd.DataFrame) -> None:
 
         self.original_widget.contents = [
-            (c, self.original_widget.options("pack")) for c in format_df(data)
+            (c, self.original_widget.options("pack"))
+            for c in format_dataframe(data)
         ]
 
     def handle_input(self, queue: Queue) -> Callable[[Any], bool]:

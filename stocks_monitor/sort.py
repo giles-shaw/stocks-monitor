@@ -1,5 +1,4 @@
-"""
-Sorting logic for stocks_monitor UI.
+""" Sorting logic for stocks_monitor UI.
 """
 from numbers import Number
 from queue import Queue
@@ -7,7 +6,7 @@ from typing import Generator, Iterable, Tuple
 
 import pandas as pd
 
-from stocks_monitor.format import add_arrow
+from stocks_monitor.format import format_column_names
 
 
 def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
@@ -17,18 +16,19 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
         candidate = queue.get()
     dataframe = candidate
 
-    arrival, new_sort_direction = -1, sort_direction()
-    next(new_sort_direction)
+    sort_key, sort_direction_generator = -1, sort_direction()
+    direction = next(sort_direction_generator)
+    yield processed_dataframe(dataframe, sort_key, direction)
 
     while True:
+        arrival = queue.get()
         if isinstance(arrival, pd.DataFrame):
             dataframe = arrival
         else:
             sort_key = arrival
             numeric_col = numeric(dataframe.iloc[:, sort_key])
-            direction = new_sort_direction.send((sort_key, numeric_col))
-        yield processed_dataframe(dataframe, direction, sort_key)
-        arrival = queue.get()
+            direction = sort_direction_generator.send((sort_key, numeric_col))
+        yield processed_dataframe(dataframe, sort_key, direction)
 
 
 def sort_direction() -> Generator[bool, Tuple[int, bool], None]:
@@ -45,22 +45,22 @@ def sort_direction() -> Generator[bool, Tuple[int, bool], None]:
 
 
 def processed_dataframe(
-    dataframe: pd.DataFrame, direction: bool, sort_key: int
+    dataframe: pd.DataFrame, sort_key: int, direction: bool
 ) -> pd.DataFrame:
 
     if sort_key == -1:
-        return dataframe
+        return dataframe.rename(
+            mapper=format_column_names(
+                tuple(dataframe), sort_key, direction=None
+            ),
+            axis="columns",
+        )
     else:
         name = dataframe.columns[sort_key]
-        if sort_key == 0:
-            return dataframe.sort_values(by=name, ascending=direction).rename(
-                mapper={name: add_arrow(name, direction, left_align=True)},
-                axis="columns",
-            )
-        else:
-            return dataframe.sort_values(by=name, ascending=direction).rename(
-                mapper={name: add_arrow(name, direction)}, axis="columns"
-            )
+        return dataframe.sort_values(by=name, ascending=direction).rename(
+            mapper=format_column_names(tuple(dataframe), sort_key, direction),
+            axis="columns",
+        )
 
 
 def numeric(series: pd.Series) -> bool:

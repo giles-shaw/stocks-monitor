@@ -4,7 +4,7 @@ CLI for stocks_monitor.
 import argparse
 import os
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterator
+from typing import Any, Dict
 
 import pandas as pd
 import toml
@@ -82,7 +82,7 @@ def cli() -> None:
     with open(CREDENTIALS_PATH, "r") as f:
         kwargs["token"] = toml.load(f)["iex_publishable_token"]
 
-    stocks_feed = fake_data_feed if args.test else data_feed  # type: ignore
+    stocks_feed = fake_data_feed if args.test else data_feed
     monitor(stocks_feed(**kwargs))
 
 

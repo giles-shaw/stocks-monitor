@@ -3,7 +3,7 @@ Helper formatting functions to convert pd.DataFrame values to displayable text
 characters.
 """
 from collections import OrderedDict
-from typing import Any, Dict, Union, List, Tuple, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 import urwid

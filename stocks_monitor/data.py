@@ -39,7 +39,7 @@ def data_feed(
 
             yield pd.DataFrame.from_dict(flattened, orient="index")[
                 list(fields)
-            ].rename(fields, axis="columns")
+            ].rename(fields, axis="columns").loc[symbols]
             sleep(query_wait_time)
 
 

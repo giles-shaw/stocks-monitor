@@ -47,19 +47,20 @@ def sort_direction() -> Generator[bool, Tuple[int, bool], None]:
 def processed_dataframe(
     dataframe: pd.DataFrame, direction: bool, sort_key: int
 ) -> pd.DataFrame:
-    name = dataframe.columns[sort_key]
 
     if sort_key == -1:
         return dataframe
-    elif sort_key == 0:
-        return dataframe.sort_values(by=name, ascending=direction).rename(
-            mapper={name: add_arrow(name, direction, left_align=True)},
-            axis="columns",
-        )
     else:
-        return dataframe.sort_values(by=name, ascending=direction).rename(
-            mapper={name: add_arrow(name, direction)}, axis="columns"
-        )
+        name = dataframe.columns[sort_key]
+        if sort_key == 0:
+            return dataframe.sort_values(by=name, ascending=direction).rename(
+                mapper={name: add_arrow(name, direction, left_align=True)},
+                axis="columns",
+            )
+        else:
+            return dataframe.sort_values(by=name, ascending=direction).rename(
+                mapper={name: add_arrow(name, direction)}, axis="columns"
+            )
 
 
 def numeric(series: pd.Series) -> bool:

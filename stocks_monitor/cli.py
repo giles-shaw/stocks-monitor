@@ -23,7 +23,7 @@ else:
     CONFIG_PATH = Path.home() / Path(".config") / SM_CONFIG
     CREDENTIALS_PATH = Path.home() / Path(".config") / SM_CREDENTIALS
 
-IEX_KEYS = [
+DEFAULT_IEX_KEYS = [
     "symbol",
     "iexRealtimePrice",
     "open",
@@ -38,7 +38,7 @@ ALIASES = dict(
         ("marketCap", "mktCap"),
     ]
 )
-FIELDS = {**dict([(f, f) for f in IEX_KEYS]), **ALIASES}
+DEFAULT_FIELDS = {**dict([(f, f) for f in DEFAULT_IEX_KEYS]), **ALIASES}
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -71,7 +71,7 @@ def cli() -> None:
 
     args = parser.parse_args()
 
-    kwargs: Dict[str, Any] = {"fields": FIELDS}
+    kwargs: Dict[str, Any] = {"fields": DEFAULT_FIELDS}
     if CONFIG_PATH.is_file():
         with open(CONFIG_PATH, "r") as f:
             kwargs = {**kwargs, **toml.load(f)}

@@ -76,7 +76,15 @@ def format_number(e: Union[int, float]) -> str:
         return "\n" + f"{(e /thresh):0.2f}"
 
     dct = OrderedDict(
-        [(10 ** 12, "T"), (10 ** 9, "B"), (10 ** 6, "M"), (1, "")]
+        [
+            (10 ** 12, "T"),
+            (10 ** 9, "B"),
+            (10 ** 6, "M"),
+            (1, ""),
+            (0.1, "E-1"),
+            (0.01, "E-2"),
+            (0.001, "E-3"),
+        ]
     )
     for thresh, abrv in dct.items():
         if abs(e) > thresh:

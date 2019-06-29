@@ -10,46 +10,27 @@ import urwid
 
 
 def format_column_names(
-    column_names: Tuple[str, ...], sort_key: int, direction: Optional[bool]
+    names: Tuple[str, ...], arrow_ix: Optional[int], direction: bool = False
 ) -> Dict[str, str]:
 
-    if direction is not None:
-        labelled_names = [
-            add_arrow(name, direction, preceeding=(sort_key == 0))
-            if ix == sort_key
-            else name
-            for ix, name in enumerate(column_names)
-        ]
-    else:
-        labelled_names = list(column_names)
-
-    formatted_names = [
-        format_name(name, left_align=(ix == 0))
-        for ix, name in enumerate(labelled_names)
+    labelled_names = [
+        add_arrow(name, ix, direction)
+        if ix == arrow_ix
+        else add_spaces(name, ix)
+        for ix, name in enumerate(names)
     ]
-    return dict(zip(column_names, formatted_names))
+    return dict(zip(names, labelled_names))
 
 
-def add_arrow(name: str, direction: bool, preceeding: bool = False) -> str:
-    if preceeding:
-        return add_arrow(name[::-1], direction)[::-1]
-    if direction is True:
-        return "▼ " + name
-    return "▲ " + name
+def add_arrow(name: str, name_ix: int, direction: bool) -> str:
+
+    arrow = "▼" if direction else "▲"
+    return name + " " + arrow if name_ix == 0 else arrow + " " + name
 
 
-def format_name(name: str, left_align: bool = False) -> str:
+def add_spaces(name: str, name_ix: int) -> str:
 
-    if left_align:
-        return format_name(name[::-1])[::-1]
-
-    try:
-        if name[:2] == "▲ " or name[:2] == "▼ ":
-            return name
-        else:
-            return "  " + name
-    except IndexError:
-        return name
+    return name + "  " if name_ix == 0 else "  " + name
 
 
 def format_dataframe(df: pd.DataFrame) -> List[urwid.Text]:

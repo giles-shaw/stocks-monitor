@@ -50,15 +50,15 @@ def processed_dataframe(
 
     if sort_key == -1:
         return dataframe.rename(
-            mapper=format_column_names(
-                tuple(dataframe), sort_key, direction=None
-            ),
+            mapper=format_column_names(names=tuple(dataframe), arrow_ix=None),
             axis="columns",
         )
     else:
         name = dataframe.columns[sort_key]
         return dataframe.sort_values(by=name, ascending=direction).rename(
-            mapper=format_column_names(tuple(dataframe), sort_key, direction),
+            mapper=format_column_names(
+                names=tuple(dataframe), arrow_ix=sort_key, direction=direction
+            ),
             axis="columns",
         )
 

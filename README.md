@@ -34,7 +34,7 @@ Some aspects of `stocks-monitor`'s behaviour can be configured by placing a `con
 * You can configure how long `stocks-monitor` waits between sending requests to the IEX Cloud API. Beware that setting a lower request wait time will result in `stocks-monitor` consuming IEX Cloud `messages` on your behalf at a faster rate. 
 
 ## Requirements
-`stocks-monitor` requires `Python 3.7` or higher, and the libraries `urwid`, `numpy`, `pandas`, `toml`, and `requests`. `stocks-monitor` has been tested using `zsh` and `bash` on `macOS Mojave`.
+`stocks-monitor` requires `Python 3.6` or higher, and the libraries `urwid`, `numpy`, `pandas`, `toml`, and `requests`. `stocks-monitor` has been tested using `zsh` and `bash` on `macOS Mojave`.
 
 ## Installation
 ```

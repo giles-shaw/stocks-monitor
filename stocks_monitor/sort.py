@@ -2,7 +2,7 @@
 """
 from numbers import Number
 from queue import Queue
-from typing import Generator, Iterable, Tuple
+from typing import Generator, Iterable, Optional, Tuple
 
 import pandas as pd
 
@@ -17,8 +17,9 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
     dataframe = candidate
 
     sort_key, sort_direction_generator = -1, sort_direction()
-    next(sort_direction_generator)
-    yield processed_dataframe(dataframe, sort_key)
+    direction = next(sort_direction_generator)
+
+    yield processed_dataframe(dataframe, sort_key, direction)
 
     while True:
         arrival = queue.get()
@@ -32,13 +33,13 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
             yield processed_dataframe(dataframe, sort_key, direction)
         except IndexError:
             # current sort_key is not a valid column for new dataframe
-            yield processed_dataframe(dataframe, sort_key=-1)
+            yield processed_dataframe(dataframe, sort_key=-1, direction=None)
 
 
-def sort_direction() -> Generator[bool, Tuple[int, bool], None]:
+def sort_direction() -> Generator[Optional[bool], Tuple[int, bool], None]:
 
     previous_key = None
-    (key, numeric_col) = yield False
+    (key, numeric_col) = yield None
     while True:
         if previous_key != key:
             # Sort numeric columns in descending order by default.
@@ -49,10 +50,10 @@ def sort_direction() -> Generator[bool, Tuple[int, bool], None]:
 
 
 def processed_dataframe(
-    dataframe: pd.DataFrame, sort_key: int, direction: bool = True
+    dataframe: pd.DataFrame, sort_key: int, direction: Optional[bool]
 ) -> pd.DataFrame:
 
-    if sort_key == -1:
+    if sort_key == -1 or direction is None:
         return dataframe.rename(
             mapper=format_column_names(names=tuple(dataframe), arrow_ix=None),
             axis="columns",

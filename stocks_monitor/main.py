@@ -28,7 +28,7 @@ def monitor(data_feed: Iterable[pd.DataFrame]) -> None:
 def gui(queue: Queue) -> None:
 
     dataframe_widget = DataFrameWidget(
-        pd.DataFrame(columns="Fetching data...".split())
+        pd.DataFrame(columns=["Fetching data..."])
     )
 
     loop = urwid.MainLoop(

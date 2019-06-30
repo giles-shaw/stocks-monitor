@@ -28,7 +28,11 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
             sort_key = arrival
             numeric_col = numeric(dataframe.iloc[:, sort_key])
             direction = sort_direction_generator.send((sort_key, numeric_col))
-        yield processed_dataframe(dataframe, sort_key, direction)
+        try:
+            yield processed_dataframe(dataframe, sort_key, direction)
+        except IndexError:
+            # current sort_key is not a valid column for new dataframe
+            yield processed_dataframe(dataframe, sort_key=-1, direction=False)
 
 
 def sort_direction() -> Generator[bool, Tuple[int, bool], None]:

@@ -25,12 +25,12 @@ def format_column_names(
 def add_arrow(name: str, name_ix: int, direction: bool) -> str:
 
     arrow = "▼" if direction else "▲"
-    return name + " " + arrow if name_ix == 0 else arrow + " " + name
+    return (name + " " + arrow) if name_ix == 0 else (arrow + " " + name)
 
 
 def add_spaces(name: str, name_ix: int) -> str:
 
-    return name + "  " if name_ix == 0 else "  " + name
+    return (name + "  ") if name_ix == 0 else ("  " + name)
 
 
 def format_dataframe(df: pd.DataFrame) -> List[urwid.Text]:

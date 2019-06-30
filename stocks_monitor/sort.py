@@ -17,8 +17,8 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
     dataframe = candidate
 
     sort_key, sort_direction_generator = -1, sort_direction()
-    direction = next(sort_direction_generator)
-    yield processed_dataframe(dataframe, sort_key, direction)
+    next(sort_direction_generator)
+    yield processed_dataframe(dataframe, sort_key)
 
     while True:
         arrival = queue.get()
@@ -32,7 +32,7 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
             yield processed_dataframe(dataframe, sort_key, direction)
         except IndexError:
             # current sort_key is not a valid column for new dataframe
-            yield processed_dataframe(dataframe, sort_key=-1, direction=False)
+            yield processed_dataframe(dataframe, sort_key=-1)
 
 
 def sort_direction() -> Generator[bool, Tuple[int, bool], None]:
@@ -49,7 +49,7 @@ def sort_direction() -> Generator[bool, Tuple[int, bool], None]:
 
 
 def processed_dataframe(
-    dataframe: pd.DataFrame, sort_key: int, direction: bool
+    dataframe: pd.DataFrame, sort_key: int, direction: bool = True
 ) -> pd.DataFrame:
 
     if sort_key == -1:
@@ -57,14 +57,13 @@ def processed_dataframe(
             mapper=format_column_names(names=tuple(dataframe), arrow_ix=None),
             axis="columns",
         )
-    else:
-        name = dataframe.columns[sort_key]
-        return dataframe.sort_values(by=name, ascending=direction).rename(
-            mapper=format_column_names(
-                names=tuple(dataframe), arrow_ix=sort_key, direction=direction
-            ),
-            axis="columns",
-        )
+    name = dataframe.columns[sort_key]
+    return dataframe.sort_values(by=name, ascending=direction).rename(
+        mapper=format_column_names(
+            names=tuple(dataframe), arrow_ix=sort_key, direction=direction
+        ),
+        axis="columns",
+    )
 
 
 def numeric(series: pd.Series) -> bool:

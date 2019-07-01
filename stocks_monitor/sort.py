@@ -16,7 +16,7 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
         candidate = queue.get()
     dataframe = candidate
 
-    sort_key, sort_direction_generator = -1, sort_direction()
+    sort_key, sort_direction_generator = None, sort_direction()
     direction = next(sort_direction_generator)
 
     yield processed_dataframe(dataframe, sort_key, direction)
@@ -27,21 +27,27 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
             dataframe = arrival
         else:
             sort_key = arrival
-            numeric_col = numeric(dataframe.iloc[:, sort_key])
+            numeric_col = (
+                numeric(dataframe.iloc[:, sort_key]) if sort_key else False
+            )
             direction = sort_direction_generator.send((sort_key, numeric_col))
         try:
             yield processed_dataframe(dataframe, sort_key, direction)
         except IndexError:
             # current sort_key is not a valid column for new dataframe
-            yield processed_dataframe(dataframe, sort_key=-1, direction=None)
+            yield processed_dataframe(dataframe, sort_key=None, direction=None)
 
 
-def sort_direction() -> Generator[Optional[bool], Tuple[int, bool], None]:
+def sort_direction() -> Generator[
+    Optional[bool], Tuple[Optional[int], bool], None
+]:
 
     previous_key = None
     (key, numeric_col) = yield None
     while True:
-        if previous_key != key:
+        if key is None:
+            previous_key, direction = key, None
+        elif previous_key != key:
             # Sort numeric columns in descending order by default.
             previous_key, direction = key, not numeric_col
         else:
@@ -50,10 +56,10 @@ def sort_direction() -> Generator[Optional[bool], Tuple[int, bool], None]:
 
 
 def processed_dataframe(
-    dataframe: pd.DataFrame, sort_key: int, direction: Optional[bool]
+    dataframe: pd.DataFrame, sort_key: Optional[int], direction: Optional[bool]
 ) -> pd.DataFrame:
 
-    if sort_key == -1 or direction is None:
+    if sort_key is None or direction is None:
         return dataframe.rename(
             mapper=format_column_names(names=tuple(dataframe), arrow_ix=None),
             axis="columns",

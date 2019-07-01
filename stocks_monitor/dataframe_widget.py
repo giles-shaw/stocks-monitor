@@ -39,7 +39,10 @@ class DataFrameWidget(urwid.Filler):
             except AssertionError:
                 return False
 
-            queue.put(int(key) - 1)
+            if int(key) == 0:
+                queue.put(None)
+            else:
+                queue.put(int(key) - 1)
             return True
 
         return fn

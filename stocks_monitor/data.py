@@ -28,6 +28,7 @@ def data_feed(
                         "types": "quote",
                         "token": token,
                     },
+                    timeout=10,
                 )
                 response.raise_for_status()
 
@@ -43,6 +44,8 @@ def data_feed(
                 ].rename(fields, axis="columns").loc[symbols]
             except requests.ConnectionError:
                 yield pd.DataFrame(data=[], columns=["Connection lost!"])
+            except requests.Timeout:
+                yield pd.DataFrame(data=[], columns=["Connection timed out!"])
             sleep(query_wait_time)
 
 

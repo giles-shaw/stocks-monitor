@@ -3,7 +3,7 @@ Wrapper for urwid.Filler designed to display information from a DataFrame
 and pass on user input to a queue for processing.
 """
 from queue import Queue
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 import pandas as pd
 import urwid
@@ -12,9 +12,11 @@ from stocks_monitor.format import format_dataframe
 
 
 class DataFrameWidget(urwid.Filler):
-    def __init__(self, data: pd.DataFrame = pd.DataFrame([])) -> None:
+    def __init__(self, data: Optional[pd.DataFrame] = None) -> None:
         original_widget = urwid.Columns([], dividechars=3)
         super().__init__(original_widget, "top")
+        if data is None:
+            data = pd.DataFrame()
         self.update_columns(data)
 
     def update_columns(self, data: pd.DataFrame) -> None:

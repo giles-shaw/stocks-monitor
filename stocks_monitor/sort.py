@@ -1,4 +1,5 @@
-""" Sorting logic for stocks_monitor UI.
+"""
+Sorting logic for stocks_monitor UI.
 """
 from numbers import Number
 from queue import Queue

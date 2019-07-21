@@ -17,8 +17,8 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
         candidate = queue.get()
     dataframe = candidate
 
-    sort_key, sort_direction_generator = None, sort_direction()
-    direction = next(sort_direction_generator)
+    sort_key, sort_direction = None, iterDirections()
+    direction = next(sort_direction)
 
     yield processed_dataframe(dataframe, sort_key, direction)
 
@@ -31,7 +31,7 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
             numeric_col = (
                 numeric(dataframe.iloc[:, sort_key]) if sort_key else False
             )
-            direction = sort_direction_generator.send((sort_key, numeric_col))
+            direction = sort_direction.send((sort_key, numeric_col))
         try:
             yield processed_dataframe(dataframe, sort_key, direction)
         except IndexError:
@@ -39,7 +39,7 @@ def sort_data(queue: Queue) -> Iterable[pd.DataFrame]:
             yield processed_dataframe(dataframe, sort_key=None, direction=None)
 
 
-def sort_direction() -> Generator[
+def iterDirections() -> Generator[
     Optional[bool], Tuple[Optional[int], bool], None
 ]:
 
